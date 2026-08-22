@@ -2,6 +2,11 @@ import { useState } from "react";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
+console.log("=================================");
+console.log("API URL being used:", API_URL);
+console.log("VITE_API_URL:", import.meta.env.VITE_API_URL);
+console.log("=================================");
+
 function Login({ onLogin }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
