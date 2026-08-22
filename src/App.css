@@ -1,0 +1,1162 @@
+/* =========================================================
+   GLOBAL
+   ========================================================= */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+  background: #f4f6f9;
+  color: #172033;
+}
+
+/* =========================================================
+   WEBSITE CUSTOMIZER
+   IMPORTANT:
+   Everything below is scoped to .website-customizer.
+
+   This prevents the customizer/editor styles from affecting:
+   - Login
+   - Dashboard
+   - Admin Dashboard
+   - Customer Share
+   - Public Website
+   - Other application components
+   ========================================================= */
+
+.website-customizer {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  background: #eef1f5;
+}
+
+/* =========================================================
+   EDITOR PANE
+   ========================================================= */
+
+.website-customizer .editor-pane {
+  width: 430px;
+  min-width: 430px;
+  height: 100vh;
+  flex-shrink: 0;
+}
+
+/* =========================================================
+   LEFT EDITOR
+   ========================================================= */
+
+.website-customizer .editor {
+  width: 100%;
+  height: 100%;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  background: #ffffff;
+
+  border-right: 1px solid #e5e7eb;
+
+  box-shadow: 8px 0 30px rgba(15, 23, 42, 0.04);
+
+  position: relative;
+  z-index: 10;
+}
+
+/* =========================================================
+   EDITOR SCROLLBAR
+   ========================================================= */
+
+.website-customizer .editor::-webkit-scrollbar {
+  width: 7px;
+}
+
+.website-customizer .editor::-webkit-scrollbar-track {
+  background: #f8fafc;
+}
+
+.website-customizer .editor::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 20px;
+}
+
+.website-customizer .editor::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* =========================================================
+   EDITOR HEADER
+   ========================================================= */
+
+.website-customizer .editor-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+
+  min-height: 82px;
+
+  display: flex;
+  align-items: center;
+
+  padding: 16px 18px;
+
+  background: rgba(255, 255, 255, 0.97);
+
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  border-bottom: 1px solid #edf0f4;
+
+  gap: 12px;
+}
+
+/* =========================================================
+   BACK BUTTON
+   ========================================================= */
+
+.website-customizer .editor-back-button {
+  width: 40px;
+  height: 40px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+
+  background: #ffffff;
+  color: #374151;
+
+  font-size: 22px;
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.website-customizer .editor-back-button:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  transform: translateX(-2px);
+}
+
+/* =========================================================
+   EDITOR HEADER TITLE
+   ========================================================= */
+
+.website-customizer .editor-header-title {
+  min-width: 0;
+  flex: 1;
+}
+
+.website-customizer .editor-header-title h1 {
+  margin: 0;
+
+  font-size: 17px;
+  line-height: 1.25;
+
+  color: #111827;
+
+  font-weight: 800;
+}
+
+.website-customizer .editor-header-title span {
+  display: block;
+
+  margin-top: 3px;
+
+  color: #8a94a6;
+
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* =========================================================
+   SAVE AREA
+   ========================================================= */
+
+.website-customizer .editor-save-area {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  flex-shrink: 0;
+}
+
+.website-customizer .save-status {
+  display: none;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+.website-customizer .save-status.saved {
+  color: #16a34a;
+}
+
+.website-customizer .save-status.unsaved {
+  color: #d97706;
+}
+
+.website-customizer .save-status.saving {
+  color: #2563eb;
+}
+
+.website-customizer .save-status.error {
+  color: #dc2626;
+}
+
+/* =========================================================
+   SAVE BUTTON
+   ========================================================= */
+
+.website-customizer .editor-save-button {
+  border: none;
+
+  padding: 10px 15px;
+
+  border-radius: 9px;
+
+  background: #2563eb;
+  color: #ffffff;
+
+  font-family: inherit;
+
+  font-size: 13px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  box-shadow: 0 5px 14px rgba(37, 99, 235, 0.2);
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.website-customizer .editor-save-button:hover:not(:disabled) {
+  background: #1d4ed8;
+
+  transform: translateY(-1px);
+
+  box-shadow: 0 7px 18px rgba(37, 99, 235, 0.25);
+}
+
+.website-customizer .editor-save-button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* =========================================================
+   EDITOR SECTIONS
+   ========================================================= */
+
+.website-customizer .editor-section {
+  margin: 12px 14px;
+
+  border: 1px solid #e8ecf2;
+  border-radius: 14px;
+
+  background: #ffffff;
+
+  overflow: hidden;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.website-customizer .editor-section:hover {
+  border-color: #dce3ed;
+}
+
+/* =========================================================
+   SECTION HEADER
+   ========================================================= */
+
+.website-customizer .section-header {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 16px 17px;
+
+  border: none;
+
+  background: #ffffff;
+  color: #172033;
+
+  cursor: pointer;
+
+  text-align: left;
+
+  font-family: inherit;
+
+  transition: background 0.2s ease;
+}
+
+.website-customizer .section-header:hover {
+  background: #f8fafc;
+}
+
+.website-customizer .section-header > div {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  min-width: 0;
+}
+
+/* =========================================================
+   SECTION ICON
+   ========================================================= */
+
+.website-customizer .section-icon {
+  width: 40px;
+  height: 40px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 11px;
+
+  background: #eef3ff;
+
+  font-size: 19px;
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+.website-customizer .section-header:hover .section-icon {
+  transform: scale(1.04);
+  background: #e5edff;
+}
+
+/* =========================================================
+   SECTION TITLE
+   ========================================================= */
+
+.website-customizer .section-header strong,
+.website-customizer .section-header small {
+  display: block;
+}
+
+.website-customizer .section-header strong {
+  font-size: 14px;
+  line-height: 1.3;
+
+  color: #1f2937;
+
+  font-weight: 800;
+}
+
+.website-customizer .section-header small {
+  margin-top: 3px;
+
+  color: #8a94a6;
+
+  font-size: 11px;
+
+  line-height: 1.3;
+}
+
+/* =========================================================
+   SECTION ARROW
+   ========================================================= */
+
+.website-customizer .section-arrow {
+  width: 28px;
+  height: 28px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 8px;
+
+  background: #f5f7fa;
+
+  color: #667085;
+
+  font-size: 15px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   SECTION CONTENT
+   ========================================================= */
+
+.website-customizer .section-content {
+  padding: 0 17px 18px;
+
+  border-top: 1px solid #f0f2f5;
+
+  background: #fbfcfe;
+}
+
+/* =========================================================
+   FORM LABELS
+   ========================================================= */
+
+.website-customizer .section-content label {
+  display: block;
+
+  margin-top: 16px;
+  margin-bottom: 7px;
+
+  color: #374151;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* =========================================================
+   FORM INPUTS
+   ========================================================= */
+
+.website-customizer .section-content input[type="text"],
+.website-customizer .section-content input[type="tel"],
+.website-customizer .section-content input[type="email"],
+.website-customizer .section-content input[type="url"],
+.website-customizer .section-content input[type="number"],
+.website-customizer .section-content input[type="date"],
+.website-customizer .section-content textarea,
+.website-customizer .section-content select {
+  width: 100%;
+
+  padding: 11px 12px;
+
+  border: 1px solid #dce2ea;
+  border-radius: 9px;
+
+  background: #ffffff;
+  color: #172033;
+
+  font-family: inherit;
+  font-size: 13px;
+
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.website-customizer .section-content input[type="text"]:hover,
+.website-customizer .section-content input[type="tel"]:hover,
+.website-customizer .section-content input[type="email"]:hover,
+.website-customizer .section-content input[type="url"]:hover,
+.website-customizer .section-content input[type="number"]:hover,
+.website-customizer .section-content input[type="date"]:hover,
+.website-customizer .section-content textarea:hover,
+.website-customizer .section-content select:hover {
+  border-color: #cbd5e1;
+}
+
+.website-customizer .section-content input[type="text"]:focus,
+.website-customizer .section-content input[type="tel"]:focus,
+.website-customizer .section-content input[type="email"]:focus,
+.website-customizer .section-content input[type="url"]:focus,
+.website-customizer .section-content input[type="number"]:focus,
+.website-customizer .section-content input[type="date"]:focus,
+.website-customizer .section-content textarea:focus,
+.website-customizer .section-content select:focus {
+  border-color: #2563eb;
+
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.09);
+
+  background: #ffffff;
+}
+
+.website-customizer .section-content input::placeholder,
+.website-customizer .section-content textarea::placeholder {
+  color: #a0a8b5;
+}
+
+/* =========================================================
+   TEXTAREA
+   ========================================================= */
+
+.website-customizer .section-content textarea {
+  min-height: 120px;
+
+  resize: vertical;
+
+  line-height: 1.6;
+}
+
+/* =========================================================
+   FILE INPUT
+   ========================================================= */
+
+.website-customizer .section-content input[type="file"] {
+  width: 100%;
+
+  padding: 9px;
+
+  border: 1px dashed #cbd5e1;
+  border-radius: 10px;
+
+  background: #f8fafc;
+
+  color: #64748b;
+
+  font-family: inherit;
+  font-size: 12px;
+
+  cursor: pointer;
+}
+
+.website-customizer .section-content input[type="file"]:hover {
+  border-color: #2563eb;
+  background: #f5f8ff;
+}
+
+/* =========================================================
+   LOGO PREVIEW
+   ========================================================= */
+
+.website-customizer .section-content img {
+  display: block;
+
+  padding: 8px;
+
+  background: #ffffff;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+
+  box-shadow: 0 5px 15px rgba(15, 23, 42, 0.06);
+}
+
+/* =========================================================
+   SERVICES
+   ========================================================= */
+
+.website-customizer .section-content > p {
+  margin: 16px 0;
+
+  padding: 13px;
+
+  border-radius: 9px;
+
+  background: #f1f5f9;
+
+  color: #64748b;
+
+  font-size: 12px;
+
+  text-align: center;
+}
+
+/* =========================================================
+   SERVICE ROW
+   ========================================================= */
+
+.website-customizer .section-content > div[style*="display: flex"] {
+  padding: 9px;
+
+  margin-bottom: 9px !important;
+
+  border: 1px solid #e5e9ef;
+
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  box-shadow: 0 2px 7px rgba(15, 23, 42, 0.03);
+}
+
+.website-customizer .section-content > div[style*="display: flex"] input {
+  min-width: 0;
+}
+
+/* =========================================================
+   SERVICE REMOVE BUTTON
+   ========================================================= */
+
+.website-customizer .section-content > div[style*="display: flex"] button {
+  flex-shrink: 0;
+
+  padding: 8px 12px;
+
+  background: #fff1f2 !important;
+  color: #dc2626 !important;
+
+  border: 1px solid #fecdd3 !important;
+  border-radius: 7px !important;
+
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.website-customizer
+  .section-content
+  > div[style*="display: flex"]
+  button:hover {
+  background: #ffe4e6 !important;
+  border-color: #fda4af !important;
+}
+
+/* =========================================================
+   ADD SERVICE BUTTON
+   ========================================================= */
+
+.website-customizer
+  .section-content
+  button[style*="background: rgb(37, 99, 235)"] {
+  width: 100%;
+
+  margin-top: 6px !important;
+
+  padding: 10px 16px;
+
+  background: #eef3ff !important;
+  color: #2563eb !important;
+
+  border: 1px dashed #bfd0f8 !important;
+  border-radius: 9px !important;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.website-customizer
+  .section-content
+  button[style*="background: rgb(37, 99, 235)"]:hover {
+  background: #e4ecff !important;
+  border-color: #93b0f4 !important;
+}
+
+/* =========================================================
+   SELECT
+   ========================================================= */
+
+.website-customizer .section-content select {
+  cursor: pointer;
+  appearance: auto;
+}
+
+/* =========================================================
+   RIGHT PREVIEW PANE
+   ========================================================= */
+
+.website-customizer .preview-pane {
+  flex: 1;
+  min-width: 0;
+  height: 100vh;
+}
+
+/* =========================================================
+   PREVIEW CONTAINER
+   ========================================================= */
+
+.website-customizer .preview {
+  width: 100%;
+  height: 100%;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  background: #eef1f5;
+
+  position: relative;
+
+  isolation: isolate;
+}
+
+/* =========================================================
+   PREVIEW SCROLLBAR
+   ========================================================= */
+
+.website-customizer .preview::-webkit-scrollbar {
+  width: 8px;
+}
+
+.website-customizer .preview::-webkit-scrollbar-track {
+  background: #eef1f5;
+}
+
+.website-customizer .preview::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 20px;
+}
+
+.website-customizer .preview::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* =========================================================
+   MOBILE EDITOR NAVIGATION
+   ========================================================= */
+
+.website-customizer .mobile-editor-nav {
+  display: none;
+}
+
+/* =========================================================
+   MOBILE HIDDEN
+   ========================================================= */
+
+.website-customizer .mobile-hidden {
+  display: block;
+}
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 1000px) {
+  .website-customizer .editor-pane {
+    width: 390px;
+    min-width: 390px;
+  }
+
+  .website-customizer .editor-header-title h1 {
+    font-size: 16px;
+  }
+
+  .website-customizer .section-header {
+    padding: 15px;
+  }
+
+  .website-customizer .section-content {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 700px) {
+  .website-customizer {
+    display: block;
+    min-height: 100vh;
+  }
+
+  /* -------------------------------------------------------
+     EDITOR PANE
+     ------------------------------------------------------- */
+
+  .website-customizer .editor-pane {
+    width: 100%;
+    min-width: 100%;
+
+    height: calc(100vh - 70px);
+  }
+
+  /* -------------------------------------------------------
+     PREVIEW PANE
+     ------------------------------------------------------- */
+
+  .website-customizer .preview-pane {
+    width: 100%;
+
+    height: calc(100vh - 70px);
+
+    min-width: 0;
+  }
+
+  /* -------------------------------------------------------
+     EDITOR
+     ------------------------------------------------------- */
+
+  .website-customizer .editor {
+    width: 100%;
+    height: 100%;
+
+    border-right: none;
+
+    box-shadow: none;
+  }
+
+  /* -------------------------------------------------------
+     EDITOR HEADER
+     ------------------------------------------------------- */
+
+  .website-customizer .editor-header {
+    min-height: 70px;
+
+    padding: 12px 14px;
+  }
+
+  .website-customizer .editor-back-button {
+    width: 38px;
+    height: 38px;
+  }
+
+  .website-customizer .editor-header-title h1 {
+    font-size: 16px;
+  }
+
+  .website-customizer .editor-header-title span {
+    font-size: 10px;
+  }
+
+  .website-customizer .editor-save-area {
+    gap: 0;
+  }
+
+  .website-customizer .editor-save-button {
+    padding: 9px 13px;
+
+    font-size: 12px;
+  }
+
+  /* -------------------------------------------------------
+     EDITOR SECTIONS
+     ------------------------------------------------------- */
+
+  .website-customizer .editor-section {
+    margin: 10px 10px;
+
+    border-radius: 13px;
+  }
+
+  .website-customizer .section-header {
+    padding: 15px;
+  }
+
+  .website-customizer .section-icon {
+    width: 38px;
+    height: 38px;
+
+    font-size: 18px;
+  }
+
+  .website-customizer .section-header strong {
+    font-size: 13px;
+  }
+
+  .website-customizer .section-header small {
+    font-size: 10px;
+  }
+
+  .website-customizer .section-content {
+    padding: 0 14px 17px;
+  }
+
+  .website-customizer .section-content label {
+    font-size: 11px;
+  }
+
+  .website-customizer .section-content input[type="text"],
+  .website-customizer .section-content input[type="tel"],
+  .website-customizer .section-content input[type="email"],
+  .website-customizer .section-content input[type="url"],
+  .website-customizer .section-content input[type="number"],
+  .website-customizer .section-content input[type="date"],
+  .website-customizer .section-content textarea,
+  .website-customizer .section-content select {
+    padding: 12px;
+
+    font-size: 14px;
+  }
+
+  /* -------------------------------------------------------
+     MOBILE BOTTOM NAVIGATION
+     ------------------------------------------------------- */
+
+  .website-customizer .mobile-editor-nav {
+    position: fixed;
+
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    height: 70px;
+
+    z-index: 1000;
+
+    display: grid;
+
+    grid-template-columns: 1fr 1fr 1fr;
+
+    padding: 7px 10px;
+
+    gap: 7px;
+
+    background: rgba(255, 255, 255, 0.97);
+
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+
+    border-top: 1px solid #e5e7eb;
+
+    box-shadow: 0 -5px 20px rgba(15, 23, 42, 0.06);
+  }
+
+  .website-customizer .mobile-editor-nav button {
+    border: none;
+
+    border-radius: 10px;
+
+    background: transparent;
+    color: #6b7280;
+
+    font-family: inherit;
+
+    cursor: pointer;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 2px;
+  }
+
+  .website-customizer .mobile-editor-nav button span {
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  .website-customizer .mobile-editor-nav button small {
+    font-size: 10px;
+    font-weight: 700;
+  }
+
+  .website-customizer .mobile-editor-nav button.active {
+    background: #eef3ff;
+    color: #2563eb;
+  }
+
+  .website-customizer .mobile-editor-nav .save-nav-button {
+    background: #2563eb;
+
+    color: #ffffff;
+
+    box-shadow: 0 5px 14px rgba(37, 99, 235, 0.2);
+  }
+
+  .website-customizer .mobile-editor-nav .save-nav-button:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+
+  /* -------------------------------------------------------
+     MOBILE EDIT / PREVIEW SWITCHING
+     ------------------------------------------------------- */
+
+  .website-customizer .editor-pane.mobile-hidden {
+    display: none;
+  }
+
+  .website-customizer .preview-pane.mobile-hidden {
+    display: none;
+  }
+}
+
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 380px) {
+  .website-customizer .editor-header {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .website-customizer .editor-back-button {
+    width: 35px;
+    height: 35px;
+  }
+
+  .website-customizer .editor-save-button {
+    padding: 8px 11px;
+  }
+
+  .website-customizer .editor-section {
+    margin-left: 8px;
+    margin-right: 8px;
+  }
+
+  .website-customizer .section-header {
+    padding: 13px;
+  }
+
+  .website-customizer .section-icon {
+    width: 35px;
+    height: 35px;
+  }
+}
+
+/* =========================================================
+   ACCESSIBILITY
+   IMPORTANT:
+   Scoped so this file does not alter focus styles
+   throughout the rest of the application.
+   ========================================================= */
+
+.website-customizer button:focus-visible,
+.website-customizer input:focus-visible,
+.website-customizer textarea:focus-visible,
+.website-customizer select:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+/* =========================================================
+   GLOBAL APPLICATION STYLES
+   ========================================================= */
+
+/* ---------- Box sizing ---------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* ---------- Document ---------- */
+
+html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-width: 0;
+  min-height: 100vh;
+
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Arial,
+    sans-serif;
+
+  background: #ffffff;
+  color: #111827;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ---------- React root ---------- */
+
+/*
+   IMPORTANT:
+   Do NOT give #root a fixed width.
+   Do NOT center #root.
+   Do NOT add borders to #root.
+   Individual pages control their own width.
+*/
+
+#root {
+  width: 100%;
+  min-width: 0;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+/* ---------- Links ---------- */
+
+a {
+  color: inherit;
+}
+
+/* ---------- Buttons ---------- */
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+/* ---------- Images ---------- */
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* ---------- Headings ---------- */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin-top: 0;
+}
+
+/* ---------- Paragraphs ---------- */
+
+p {
+  margin-top: 0;
+}
+
+/* ---------- Remove default body overflow issues ---------- */
+
+body {
+  overflow-x: hidden;
+}
