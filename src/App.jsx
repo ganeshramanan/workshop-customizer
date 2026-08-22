@@ -29,6 +29,15 @@ function App() {
   const [whatsapp, setWhatsapp] = useState("");
   const [hours, setHours] = useState("");
   const [services, setServices] = useState([]);
+  const [gallery, setGallery] = useState([]);
+
+  // ==================================================
+  // HERO
+  // ==================================================
+
+  const [heroTitle, setHeroTitle] = useState("");
+  const [heroSubtitle, setHeroSubtitle] = useState("");
+  const [heroBadge, setHeroBadge] = useState("");
 
   // ==================================================
   // MOBILE EDITOR
@@ -38,44 +47,11 @@ function App() {
   const [mobileView, setMobileView] = useState("edit");
   const [saveStatus, setSaveStatus] = useState("saved");
 
-  const [heroTitle, setHeroTitle] = useState("");
-  const [heroSubtitle, setHeroSubtitle] = useState("");
-  const [heroBadge, setHeroBadge] = useState("");
-
   // ==================================================
   // PREVIEW REF
   // ==================================================
 
   const previewRef = useRef(null);
-
-  // ==================================================
-  // PREVIEW NAVIGATION
-  // ==================================================
-
-  const scrollToSection = (sectionId) => {
-    const preview = previewRef.current;
-
-    if (!preview) {
-      return;
-    }
-
-    const section = preview.querySelector(`#${sectionId}`);
-
-    if (!section) {
-      console.warn(`Preview section not found: ${sectionId}`);
-      return;
-    }
-
-    const previewTop = preview.getBoundingClientRect().top;
-    const sectionTop = section.getBoundingClientRect().top;
-
-    const scrollPosition = preview.scrollTop + (sectionTop - previewTop);
-
-    preview.scrollTo({
-      top: scrollPosition,
-      behavior: "smooth",
-    });
-  };
 
   // ==================================================
   // LOAD WEBSITE
@@ -136,6 +112,27 @@ function App() {
         setHours(data.hours || "");
 
         setServices(Array.isArray(data.services) ? data.services : []);
+
+        // ==================================================
+        // GALLERY
+        // ==================================================
+
+        if (Array.isArray(data.gallery)) {
+          const normalizedGallery = data.gallery.map((image, index) => ({
+            id: image.id || `saved-${index}-${Date.now()}`,
+            url: image.url || image.image_url || image.imageUrl,
+            name:
+              image.name ||
+              image.file_name ||
+              image.fileName ||
+              `Gallery image ${index + 1}`,
+            saved: true,
+          }));
+
+          setGallery(normalizedGallery.filter((image) => image.url));
+        } else {
+          setGallery([]);
+        }
 
         setSaveStatus("saved");
       } catch (error) {
@@ -212,14 +209,15 @@ function App() {
 
       console.log("Website saved:", result);
 
-      setWebsite({
-        ...website,
+      setWebsite((previous) => ({
+        ...(previous || {}),
         ...websiteData,
-      });
+      }));
 
       setSaveStatus("saved");
     } catch (error) {
       console.error("Save error:", error);
+
       setSaveStatus("error");
     }
   };
@@ -241,7 +239,7 @@ function App() {
     }
 
     // ==================================================
-    // BASIC CLIENT-SIDE VALIDATION
+    // VALIDATION
     // ==================================================
 
     const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
@@ -295,10 +293,6 @@ function App() {
 
       setLogo(logoUrl);
 
-      // ==================================================
-      // UPDATE LOCAL WEBSITE STATE
-      // ==================================================
-
       setWebsite((previous) => ({
         ...(previous || {}),
         logo: result.logo,
@@ -313,9 +307,197 @@ function App() {
       alert(error.message || "Logo upload failed");
     }
 
+    event.target.value = "";
+  };
+
+  // ==================================================
+  // REMOVE GALLERY IMAGE
+  // ==================================================
+
+  const handleRemoveGalleryImage = async (imageId) => {
+    const imageToRemove = gallery.find((image) => image.id === imageId);
+
+    if (!imageToRemove) {
+      return;
+    }
+
     // ==================================================
-    // ALLOW SELECTING SAME FILE AGAIN
+    // LOCAL IMAGE
     // ==================================================
+
+    if (!imageToRemove.saved) {
+      if (imageToRemove.url?.startsWith("blob:")) {
+        URL.revokeObjectURL(imageToRemove.url);
+      }
+
+      setGallery((previous) =>
+        previous.filter((image) => image.id !== imageId),
+      );
+
+      setSaveStatus("unsaved");
+
+      return;
+    }
+
+    // ==================================================
+    // SAVED IMAGE
+    // ==================================================
+
+    if (!token) {
+      alert("You are not logged in.");
+      return;
+    }
+
+    try {
+      setSaveStatus("saving");
+
+      const response = await fetch(
+        `${API_URL}/api/websites/gallery/${imageId}`,
+        {
+          method: "DELETE",
+
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Failed to delete gallery image");
+      }
+
+      console.log("Gallery image deleted:", result);
+
+      setGallery((previous) =>
+        previous.filter((image) => image.id !== imageId),
+      );
+
+      setWebsite((previous) => ({
+        ...(previous || {}),
+        gallery: (previous?.gallery || []).filter(
+          (image) => image.id !== imageId,
+        ),
+      }));
+
+      setSaveStatus("saved");
+    } catch (error) {
+      console.error("Gallery delete error:", error);
+
+      setSaveStatus("error");
+
+      alert(error.message || "Failed to delete gallery image");
+    }
+  };
+
+  // ==================================================
+  // GALLERY IMAGE UPLOAD
+  // ==================================================
+
+  const handleGalleryUpload = async (event) => {
+    const files = Array.from(event.target.files || []);
+
+    if (files.length === 0) {
+      return;
+    }
+
+    if (!token) {
+      alert("You are not logged in.");
+      return;
+    }
+
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+
+    // ==================================================
+    // VALIDATE FILES
+    // Backend limit is 2 MB per file.
+    // ==================================================
+
+    const validFiles = files.filter((file) => {
+      if (!allowedTypes.includes(file.type)) {
+        alert(
+          `${file.name} is not supported. Please use JPG, PNG, WEBP or GIF.`,
+        );
+
+        return false;
+      }
+
+      if (file.size > 2 * 1024 * 1024) {
+        alert(`${file.name} must be smaller than 2 MB.`);
+
+        return false;
+      }
+
+      return true;
+    });
+
+    if (validFiles.length === 0) {
+      event.target.value = "";
+      return;
+    }
+
+    try {
+      setSaveStatus("saving");
+
+      const formData = new FormData();
+
+      validFiles.forEach((file) => {
+        formData.append("gallery", file);
+      });
+
+      // ==================================================
+      // UPLOAD TO BACKEND
+      // ==================================================
+
+      const response = await fetch(`${API_URL}/api/websites/upload-gallery`, {
+        method: "POST",
+
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Gallery upload failed");
+      }
+
+      console.log("Gallery uploaded:", result);
+
+      // ==================================================
+      // NORMALIZE RETURNED IMAGES
+      // ==================================================
+
+      const uploadedImages = (result.images || []).map((image) => ({
+        id: image.id,
+        url: image.imageUrl,
+        name: image.fileName || "Gallery image",
+        saved: true,
+      }));
+
+      // ==================================================
+      // UPDATE REACT STATE
+      // ==================================================
+
+      setGallery((previous) => [...previous, ...uploadedImages]);
+
+      setWebsite((previous) => ({
+        ...(previous || {}),
+        gallery: [...(previous?.gallery || []), ...uploadedImages],
+      }));
+
+      setSaveStatus("saved");
+    } catch (error) {
+      console.error("Gallery upload error:", error);
+
+      setSaveStatus("error");
+
+      alert(error.message || "Gallery upload failed");
+    }
 
     event.target.value = "";
   };
@@ -341,11 +523,15 @@ function App() {
       setWebsite(data);
 
       setBusinessName(data.businessName || "");
+
       setPhone(data.phone || "");
+
       setAbout(data.about || "");
 
       setHeroTitle(data.heroTitle || "");
+
       setHeroSubtitle(data.heroSubtitle || "");
+
       setHeroBadge(data.heroBadge || "");
 
       // ==================================================
@@ -363,15 +549,42 @@ function App() {
       }
 
       // ==================================================
-      // OTHER WEBSITE DATA
+      // OTHER DATA
       // ==================================================
 
       setTheme(data.theme || "blue");
+
       setAddress(data.address || "");
+
       setWhatsapp(data.whatsapp || "");
+
       setHours(data.hours || "");
 
       setServices(Array.isArray(data.services) ? data.services : []);
+
+      // ==================================================
+      // GALLERY
+      // ==================================================
+
+      if (Array.isArray(data.gallery)) {
+        const normalizedGallery = data.gallery.map((image, index) => ({
+          id: image.id || `saved-${index}-${Date.now()}`,
+
+          url: image.url || image.image_url || image.imageUrl,
+
+          name:
+            image.name ||
+            image.file_name ||
+            image.fileName ||
+            `Gallery image ${index + 1}`,
+
+          saved: true,
+        }));
+
+        setGallery(normalizedGallery.filter((image) => image.url));
+      } else {
+        setGallery([]);
+      }
 
       setSaveStatus("saved");
 
@@ -381,6 +594,37 @@ function App() {
 
       alert("Failed to load latest website data.");
     }
+  };
+
+  // ==================================================
+  // PREVIEW NAVIGATION
+  // ==================================================
+
+  const scrollToSection = (sectionId) => {
+    const preview = previewRef.current;
+
+    if (!preview) {
+      return;
+    }
+
+    const section = preview.querySelector(`#${sectionId}`);
+
+    if (!section) {
+      console.warn(`Preview section not found: ${sectionId}`);
+
+      return;
+    }
+
+    const previewTop = preview.getBoundingClientRect().top;
+
+    const sectionTop = section.getBoundingClientRect().top;
+
+    const scrollPosition = preview.scrollTop + (sectionTop - previewTop);
+
+    preview.scrollTo({
+      top: scrollPosition,
+      behavior: "smooth",
+    });
   };
 
   // ==================================================
@@ -444,6 +688,7 @@ function App() {
       <Dashboard
         user={user}
         website={website}
+        token={token}
         onEditWebsite={() => {
           setMobileView("edit");
           setSaveStatus("saved");
@@ -835,6 +1080,123 @@ function App() {
               </div>
             )}
           </div>
+
+          {/* ==================================================
+              GALLERY SECTION
+          ================================================== */}
+
+          <div className="editor-section">
+            <button
+              className="section-header"
+              onClick={() => toggleSection("gallery")}
+            >
+              <div>
+                <span className="section-icon">🖼️</span>
+
+                <span>
+                  <strong>Gallery</strong>
+
+                  <small>Add photos of your business</small>
+                </span>
+              </div>
+
+              <span className="section-arrow">
+                {openSection === "gallery" ? "⌃" : "⌄"}
+              </span>
+            </button>
+
+            {openSection === "gallery" && (
+              <div className="section-content">
+                <label>Business Photos</label>
+
+                <p
+                  style={{
+                    color: "#666",
+                    fontSize: "13px",
+                    marginBottom: "12px",
+                  }}
+                >
+                  Add photos that showcase your business, products or services.
+                </p>
+
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  multiple
+                  onChange={handleGalleryUpload}
+                />
+
+                {gallery.length > 0 && (
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                      gap: "10px",
+                      marginTop: "16px",
+                    }}
+                  >
+                    {gallery.map((image) => (
+                      <div
+                        key={image.id}
+                        style={{
+                          position: "relative",
+                          borderRadius: "10px",
+                          overflow: "hidden",
+                          border: "1px solid #ddd",
+                          background: "#f5f5f5",
+                        }}
+                      >
+                        <img
+                          src={image.url}
+                          alt={image.name}
+                          style={{
+                            width: "100%",
+                            height: "110px",
+                            objectFit: "cover",
+                            display: "block",
+                          }}
+                        />
+
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveGalleryImage(image.id)}
+                          style={{
+                            position: "absolute",
+                            top: "6px",
+                            right: "6px",
+                            width: "28px",
+                            height: "28px",
+                            border: "none",
+                            borderRadius: "50%",
+                            background: "#dc2626",
+                            color: "#fff",
+                            cursor: "pointer",
+                            fontSize: "14px",
+                            fontWeight: "bold",
+                          }}
+                          aria-label={`Remove ${image.name}`}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {gallery.length === 0 && (
+                  <p
+                    style={{
+                      color: "#888",
+                      fontSize: "13px",
+                      marginTop: "14px",
+                    }}
+                  >
+                    No photos added yet.
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -862,6 +1224,7 @@ function App() {
               whatsapp,
               hours,
               services,
+              gallery,
             }}
             businessName={businessName}
             phone={phone}
@@ -875,6 +1238,7 @@ function App() {
             whatsapp={whatsapp}
             hours={hours}
             services={services}
+            gallery={gallery}
             logoUrl={logo}
             phoneNumber={phone.replace(/[^\d+]/g, "")}
             whatsappNumber={whatsapp.replace(/\D/g, "")}

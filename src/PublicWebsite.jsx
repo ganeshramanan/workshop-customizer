@@ -38,6 +38,8 @@ function PublicWebsite({ websiteId }) {
 
         const data = await response.json();
 
+        console.log("Public website loaded:", data);
+
         setWebsite(data);
       } catch (error) {
         console.error("Public website error:", error);
@@ -57,7 +59,14 @@ function PublicWebsite({ websiteId }) {
   // ==================================================
 
   useEffect(() => {
-    const sectionIds = ["home", "services", "book", "about", "contact"];
+    const sectionIds = [
+      "home",
+      "services",
+      "gallery",
+      "book",
+      "about",
+      "contact",
+    ];
 
     const handleScroll = () => {
       const scrollPosition = window.scrollY + 140;
@@ -136,6 +145,59 @@ function PublicWebsite({ websiteId }) {
   };
 
   // ==================================================
+  // GALLERY NORMALIZATION
+  // ==================================================
+
+  const normalizeGallery = (galleryData) => {
+    if (!Array.isArray(galleryData)) {
+      return [];
+    }
+
+    return galleryData
+      .map((image, index) => {
+        if (!image) {
+          return null;
+        }
+
+        const imageUrl =
+          image.url ||
+          image.image_url ||
+          image.imageUrl ||
+          image.public_url ||
+          image.publicUrl;
+
+        if (!imageUrl) {
+          return null;
+        }
+
+        let finalUrl = imageUrl;
+
+        // If backend returns a relative URL,
+        // add the API URL.
+        if (
+          !imageUrl.startsWith("http://") &&
+          !imageUrl.startsWith("https://") &&
+          !imageUrl.startsWith("blob:")
+        ) {
+          finalUrl = `${API_URL}${imageUrl}`;
+        }
+
+        return {
+          id: image.id || image.gallery_id || `public-gallery-${index}`,
+
+          url: finalUrl,
+
+          name:
+            image.name ||
+            image.file_name ||
+            image.fileName ||
+            `Gallery image ${index + 1}`,
+        };
+      })
+      .filter(Boolean);
+  };
+
+  // ==================================================
   // INQUIRY FORM
   // ==================================================
 
@@ -192,19 +254,20 @@ function PublicWebsite({ websiteId }) {
 
       const requestData = {
         websiteId,
+
         customerName: booking.name.trim(),
+
         phone: booking.phone.trim(),
 
-        // Keep this field for backend compatibility.
-        // It is no longer shown separately in the form.
+        // Backend compatibility
         vehicle: null,
 
         service: booking.service.trim(),
 
-        // Preferred date removed from the customer form.
+        // Preferred date removed
         preferredDate: null,
 
-        // Message is now the single optional message field.
+        // Optional message
         message: booking.notes.trim() || null,
       };
 
@@ -232,7 +295,7 @@ function PublicWebsite({ websiteId }) {
       // OPEN WHATSAPP
       // --------------------------------------------------
 
-      const whatsappNumber = cleanWhatsApp(whatsapp);
+      const whatsappNumber = cleanWhatsApp(website.whatsapp);
 
       if (whatsappNumber) {
         const message = [
@@ -290,6 +353,7 @@ function PublicWebsite({ websiteId }) {
       <div className="public-loading">
         <div>
           <div className="loading-spinner"></div>
+
           <p>Loading website...</p>
         </div>
       </div>
@@ -325,21 +389,35 @@ function PublicWebsite({ websiteId }) {
     businessName: loadedBusinessName = "My Business",
     phone = "",
     about = "",
+    heroTitle = "",
+    heroSubtitle = "",
+    heroBadge = "",
     logo = null,
     theme = "blue",
     address = "",
     whatsapp = "",
     hours = "",
     services = [],
+    gallery: galleryData = [],
   } = website;
 
   const businessName = loadedBusinessName;
 
+  // ==================================================
+  // NORMALIZE DATA
+  // ==================================================
+
   const logoUrl = getLogoUrl(logo);
+
   const phoneNumber = cleanPhone(phone);
+
   const whatsappNumber = cleanWhatsApp(whatsapp);
 
   const safeServices = Array.isArray(services) ? services : [];
+
+  const gallery = normalizeGallery(galleryData);
+
+  console.log("Public gallery:", gallery);
 
   // ==================================================
   // RENDER
@@ -351,12 +429,16 @@ function PublicWebsite({ websiteId }) {
       businessName={businessName}
       phone={phone}
       about={about}
+      heroTitle={heroTitle}
+      heroSubTitle={heroSubtitle}
+      heroBadge={heroBadge}
       logo={logo}
       theme={theme}
       address={address}
       whatsapp={whatsapp}
       hours={hours}
       services={safeServices}
+      gallery={gallery}
       logoUrl={logoUrl}
       phoneNumber={phoneNumber}
       whatsappNumber={whatsappNumber}

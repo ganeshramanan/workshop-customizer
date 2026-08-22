@@ -15,6 +15,7 @@ function WebsiteRenderer({
   whatsapp,
   hours,
   services = [],
+  gallery = [],
   logoUrl,
   phoneNumber,
   whatsappNumber,
@@ -25,10 +26,26 @@ function WebsiteRenderer({
   handleBookingChange,
   handleBookingSubmit,
 }) {
+  // ==================================================
+  // SAFE DATA
+  // ==================================================
+
   const safeServices = Array.isArray(services) ? services : [];
 
+  const safeGallery = Array.isArray(gallery)
+    ? gallery
+    : Array.isArray(website?.gallery)
+      ? website.gallery
+      : [];
+
+  // ==================================================
+  // DISPLAY DATA
+  // ==================================================
+
   const displayLogo = logoUrl || logo || null;
+
   const displayPhone = phoneNumber || phone || "";
+
   const displayWhatsapp = whatsappNumber || whatsapp || "";
 
   return (
@@ -57,6 +74,7 @@ function WebsiteRenderer({
 
             <div>
               <strong>{businessName}</strong>
+
               <span>Welcome to {businessName}</span>
             </div>
           </button>
@@ -77,6 +95,20 @@ function WebsiteRenderer({
             >
               Services
             </button>
+
+            {/* ==================================================
+                GALLERY NAVIGATION
+            ================================================== */}
+
+            {safeGallery.length > 0 && (
+              <button
+                type="button"
+                className={activeSection === "gallery" ? "nav-active" : ""}
+                onClick={() => scrollToSection("gallery")}
+              >
+                Gallery
+              </button>
+            )}
 
             <button
               type="button"
@@ -133,12 +165,15 @@ function WebsiteRenderer({
           <div className="hero-text">
             <div className="hero-badge">
               <span>✓</span>
+
               {heroBadge || "Welcome"}
             </div>
 
             <h1>
               {heroTitle || businessName || "Your Business"}
+
               <br />
+
               <span>{heroSubTitle || "Quality you can trust."}</span>
             </h1>
 
@@ -167,7 +202,9 @@ function WebsiteRenderer({
 
             <div className="hero-trust">
               <span>✓ Quality service</span>
+
               <span>✓ Professional approach</span>
+
               <span>✓ Customer focused</span>
             </div>
           </div>
@@ -235,6 +272,84 @@ function WebsiteRenderer({
       </section>
 
       {/* ==================================================
+          GALLERY
+      ================================================== */}
+
+      <section id="gallery" className="gallery-section">
+        <div className="public-container">
+          <div className="section-heading">
+            <span>OUR WORK</span>
+
+            <h2>Gallery</h2>
+
+            <p>Take a look at some photos from {businessName}.</p>
+          </div>
+
+          {safeGallery.length > 0 ? (
+            <div
+              className="gallery-grid"
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                gap: "20px",
+                marginTop: "30px",
+              }}
+            >
+              {safeGallery.map((image, index) => {
+                const imageUrl = image.url || image.imageUrl || image.image_url;
+
+                const imageName =
+                  image.name ||
+                  image.fileName ||
+                  image.file_name ||
+                  `Gallery image ${index + 1}`;
+
+                if (!imageUrl) {
+                  return null;
+                }
+
+                return (
+                  <div
+                    className="gallery-item"
+                    key={image.id || `gallery-${index}`}
+                    style={{
+                      borderRadius: "14px",
+                      overflow: "hidden",
+                      background: "#f5f5f5",
+                      boxShadow: "0 4px 15px rgba(0,0,0,0.08)",
+                    }}
+                  >
+                    <img
+                      src={imageUrl}
+                      alt={imageName}
+                      loading="lazy"
+                      style={{
+                        width: "100%",
+                        height: "220px",
+                        objectFit: "cover",
+                        display: "block",
+                      }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div
+              className="empty-gallery"
+              style={{
+                textAlign: "center",
+                padding: "40px 20px",
+                color: "#888",
+              }}
+            >
+              <p>No gallery photos added yet.</p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* ==================================================
           SIMPLE INQUIRY FORM
       ================================================== */}
 
@@ -282,7 +397,7 @@ function WebsiteRenderer({
                 />
               </div>
 
-              {/* SERVICE / REQUIREMENT */}
+              {/* SERVICE */}
 
               <div className="form-group form-group-full">
                 <label htmlFor="booking-service">Service / Requirement</label>
@@ -358,6 +473,7 @@ function WebsiteRenderer({
 
             <div className="about-floating-card">
               <strong>{businessName}</strong>
+
               <span>Quality you can trust</span>
             </div>
           </div>
@@ -427,6 +543,7 @@ function WebsiteRenderer({
 
                 <div>
                   <span>ADDRESS</span>
+
                   <strong>{address}</strong>
                 </div>
               </a>
@@ -438,6 +555,7 @@ function WebsiteRenderer({
 
                 <div>
                   <span>PHONE</span>
+
                   <strong>{displayPhone}</strong>
                 </div>
               </a>
@@ -449,6 +567,7 @@ function WebsiteRenderer({
 
                 <div>
                   <span>OPENING HOURS</span>
+
                   <strong>{hours}</strong>
                 </div>
               </div>

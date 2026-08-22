@@ -1,95 +1,92 @@
-/* =========================
-   CUSTOMER DASHBOARD
-   ========================= */
+/* =========================================================
+   DASHBOARD
+========================================================= */
 
 .dashboard {
   min-height: 100vh;
-  padding: 40px 24px;
   background: #f5f7fb;
-  font-family:
-    Inter,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Arial,
-    sans-serif;
-  color: #111827;
+  padding: 40px 20px 60px;
+  color: #172033;
 }
 
 .dashboard-container {
   width: 100%;
-  max-width: 1000px;
+  max-width: 1180px;
   margin: 0 auto;
 }
 
-/* =========================
+/* =========================================================
    HEADER
-   ========================= */
+========================================================= */
 
 .dashboard-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 30px;
-  margin-bottom: 30px;
+  gap: 24px;
+  margin-bottom: 28px;
 }
 
 .dashboard-eyebrow {
   margin: 0 0 8px;
-  color: #2563eb;
   font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 1.2px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: #64748b;
 }
 
 .dashboard-header h1 {
   margin: 0;
-  color: #111827;
-  font-size: 34px;
+  font-size: 32px;
+  line-height: 1.2;
   font-weight: 750;
-  letter-spacing: -0.8px;
+  letter-spacing: -0.02em;
+  color: #111827;
 }
 
 .dashboard-subtitle {
-  margin: 8px 0 0;
-  color: #6b7280;
-  font-size: 16px;
+  margin: 10px 0 0;
+  color: #64748b;
+  font-size: 15px;
 }
 
-/* =========================
-   LOGOUT
-   ========================= */
-
 .dashboard-logout {
-  flex-shrink: 0;
-  padding: 10px 17px;
-  border: 1px solid #e5e7eb;
-  border-radius: 9px;
-  background: white;
-  color: #374151;
+  border: 1px solid #d9dee8;
+  background: #ffffff;
+  color: #334155;
+  padding: 10px 18px;
+  border-radius: 10px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition:
-    background 0.2s ease,
-    border-color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .dashboard-logout:hover {
-  background: #f9fafb;
-  border-color: #d1d5db;
+  background: #f8fafc;
+  border-color: #c4cad5;
 }
 
-/* =========================
+/* =========================================================
+   COMMON CARD
+========================================================= */
+
+.website-card,
+.enquiries-card,
+.getting-started-card {
+  background: #ffffff;
+  border: 1px solid #e5e9f0;
+  border-radius: 18px;
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.05);
+}
+
+/* =========================================================
    WEBSITE CARD
-   ========================= */
+========================================================= */
 
 .website-card {
-  padding: 28px;
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 18px;
-  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.06);
+  padding: 26px;
+  margin-bottom: 24px;
 }
 
 .website-card-header {
@@ -101,121 +98,94 @@
 .website-icon {
   width: 52px;
   height: 52px;
-  flex-shrink: 0;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 14px;
   background: #eff6ff;
   font-size: 25px;
 }
 
 .website-title-area {
   flex: 1;
-  min-width: 0;
 }
 
 .card-label {
-  margin: 0 0 4px;
-  color: #6b7280;
+  margin: 0 0 5px;
   font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.9px;
+  letter-spacing: 0.12em;
+  color: #64748b;
 }
 
 .website-title-area h2 {
   margin: 0;
-  color: #111827;
-  font-size: 22px;
+  font-size: 21px;
   font-weight: 700;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  color: #111827;
 }
 
-/* =========================
-   STATUS
-   ========================= */
-
 .website-status {
-  flex-shrink: 0;
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: #ecfdf5;
   color: #15803d;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 999px;
+  padding: 7px 12px;
   font-size: 12px;
   font-weight: 700;
 }
 
-/* =========================
-   DIVIDER
-   ========================= */
-
 .website-divider {
   height: 1px;
-  margin: 25px 0;
-  background: #eef0f3;
+  background: #edf0f4;
+  margin: 22px 0;
 }
-
-/* =========================
-   WEBSITE INFO
-   ========================= */
 
 .website-info-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
-  margin-bottom: 25px;
+  margin-bottom: 22px;
 }
 
 .website-info-item {
-  padding: 15px;
-  border: 1px solid #eef0f3;
-  border-radius: 10px;
-  background: #fafbfc;
+  padding: 15px 16px;
+  background: #f8fafc;
+  border: 1px solid #edf0f4;
+  border-radius: 12px;
 }
 
 .website-info-item span {
   display: block;
-  margin-bottom: 6px;
-  color: #6b7280;
   font-size: 12px;
+  color: #64748b;
+  margin-bottom: 5px;
 }
 
 .website-info-item strong {
-  color: #111827;
   font-size: 15px;
-  font-weight: 700;
-  text-transform: capitalize;
+  color: #1e293b;
 }
-
-/* =========================
-   EDIT WEBSITE BUTTON
-   ========================= */
 
 .dashboard-edit-button {
   width: 100%;
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 14px 18px;
   border: none;
-  border-radius: 10px;
-  background: #2563eb;
-  color: white;
-  font-size: 15px;
-  font-weight: 700;
+  background: #111827;
+  color: #ffffff;
+  padding: 13px 16px;
+  border-radius: 11px;
+  font-size: 14px;
+  font-weight: 650;
   cursor: pointer;
-  transition:
-    background 0.2s ease,
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .dashboard-edit-button:hover {
-  background: #1d4ed8;
+  background: #1f2937;
   transform: translateY(-1px);
-  box-shadow: 0 7px 18px rgba(37, 99, 235, 0.22);
 }
 
 .edit-arrow {
@@ -223,150 +193,467 @@
   font-size: 18px;
 }
 
-/* =========================
+/* =========================================================
+   CUSTOMER ENQUIRIES
+========================================================= */
+
+.enquiries-card {
+  padding: 28px;
+  margin-bottom: 24px;
+}
+
+.enquiries-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.enquiries-header h2 {
+  margin: 3px 0 7px;
+  font-size: 23px;
+  font-weight: 750;
+  color: #111827;
+}
+
+.enquiries-subtitle {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.enquiries-count {
+  min-width: 76px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: #f8fafc;
+  border: 1px solid #e5e9f0;
+  text-align: center;
+}
+
+.enquiries-count strong {
+  display: block;
+  font-size: 25px;
+  line-height: 1;
+  color: #111827;
+}
+
+.enquiries-count span {
+  display: block;
+  margin-top: 5px;
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+/* =========================================================
+   ENQUIRY SUMMARY
+========================================================= */
+
+.enquiries-summary {
+  display: flex;
+  gap: 10px;
+  margin: 22px 0 16px;
+}
+
+.enquiries-summary span {
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #f8fafc;
+  border: 1px solid #e5e9f0;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+/* =========================================================
+   ENQUIRY LIST
+========================================================= */
+
+.enquiries-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 22px;
+}
+
+.enquiry-item {
+  border: 1px solid #e5e9f0;
+  border-radius: 15px;
+  padding: 20px;
+  background: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.enquiry-item:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.05);
+}
+
+/* =========================================================
+   CUSTOMER HEADER
+========================================================= */
+
+.enquiry-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.enquiry-customer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.enquiry-avatar {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e0e7ff;
+  color: #3730a3;
+  font-size: 16px;
+  font-weight: 750;
+}
+
+.enquiry-customer h3 {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.enquiry-phone {
+  color: #64748b;
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.enquiry-phone:hover {
+  color: #2563eb;
+}
+
+/* =========================================================
+   STATUS
+========================================================= */
+
+.enquiry-status {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.enquiry-status.new {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.enquiry-status.contacted {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.enquiry-status.completed {
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+/* =========================================================
+   DETAILS
+========================================================= */
+
+.enquiry-details {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid #edf0f4;
+}
+
+.enquiry-detail {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  background: #f8fafc;
+  border-radius: 10px;
+}
+
+.enquiry-detail > span {
+  font-size: 17px;
+}
+
+.enquiry-detail small,
+.enquiry-message small {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 11px;
+  color: #64748b;
+}
+
+.enquiry-detail strong {
+  display: block;
+  font-size: 13px;
+  color: #1e293b;
+}
+
+/* =========================================================
+   MESSAGE
+========================================================= */
+
+.enquiry-message {
+  grid-column: 1 / -1;
+  padding: 13px;
+  background: #fafafa;
+  border: 1px solid #edf0f4;
+  border-radius: 10px;
+}
+
+.enquiry-message p {
+  margin: 0;
+  color: #475569;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+/* =========================================================
+   ENQUIRY FOOTER
+========================================================= */
+
+.enquiry-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 18px;
+  padding-top: 15px;
+  border-top: 1px solid #edf0f4;
+}
+
+.enquiry-footer > span {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.enquiry-contact-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 13px;
+  border-radius: 9px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #15803d;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.enquiry-contact-button:hover {
+  background: #dcfce7;
+}
+
+/* =========================================================
+   LOADING / EMPTY / ERROR
+========================================================= */
+
+.enquiries-empty {
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 30px;
+  color: #64748b;
+}
+
+.enquiries-empty-icon {
+  font-size: 34px;
+  margin-bottom: 10px;
+}
+
+.enquiries-empty h3 {
+  margin: 0 0 6px;
+  color: #334155;
+  font-size: 16px;
+}
+
+.enquiries-empty p {
+  max-width: 470px;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.enquiry-loading-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: enquiry-spin 0.8s linear infinite;
+  margin-bottom: 12px;
+}
+
+@keyframes enquiry-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.enquiries-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 22px;
+  padding: 15px;
+  border-radius: 11px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  color: #9a3412;
+}
+
+.enquiries-error > span {
+  font-size: 18px;
+}
+
+.enquiries-error strong {
+  display: block;
+  margin-bottom: 3px;
+  font-size: 13px;
+}
+
+.enquiries-error p {
+  margin: 0;
+  font-size: 12px;
+}
+
+/* =========================================================
    GETTING STARTED
-   ========================= */
+========================================================= */
 
 .getting-started-card {
   display: flex;
-  align-items: flex-start;
-  gap: 15px;
-  margin-top: 20px;
-  padding: 22px;
-  border: 1px solid #dbeafe;
-  border-radius: 16px;
-  background: #eff6ff;
+  align-items: center;
+  gap: 18px;
+  padding: 22px 26px;
+  margin-bottom: 30px;
+  background: linear-gradient(135deg, #f8fafc, #ffffff);
 }
 
 .getting-started-icon {
-  width: 40px;
-  height: 40px;
+  width: 46px;
+  height: 46px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
-  background: white;
-  font-size: 20px;
+  border-radius: 13px;
+  background: #eff6ff;
+  font-size: 22px;
 }
 
 .getting-started-content h3 {
   margin: 0 0 5px;
-  color: #1e3a8a;
   font-size: 16px;
+  color: #1e293b;
 }
 
 .getting-started-content p {
   margin: 0;
-  color: #475569;
-  font-size: 14px;
-  line-height: 1.6;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.5;
 }
 
-/* =========================
+/* =========================================================
    FOOTER
-   ========================= */
+========================================================= */
 
 .dashboard-footer {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 8px;
-  margin-top: 30px;
-  color: #9ca3af;
+  color: #94a3b8;
   font-size: 12px;
 }
 
-/* =========================
-   MOBILE
-   ========================= */
+/* =========================================================
+   RESPONSIVE
+========================================================= */
 
-@media (max-width: 700px) {
+@media (max-width: 768px) {
   .dashboard {
-    padding: 25px 15px;
+    padding: 24px 14px 40px;
   }
 
   .dashboard-header {
-    align-items: flex-start;
-    margin-bottom: 22px;
+    flex-direction: column;
   }
 
   .dashboard-header h1 {
-    font-size: 27px;
-  }
-
-  .dashboard-subtitle {
-    font-size: 14px;
+    font-size: 26px;
   }
 
   .dashboard-logout {
-    padding: 9px 12px;
-    font-size: 13px;
+    width: 100%;
   }
 
-  .website-card {
+  .website-card,
+  .enquiries-card {
     padding: 20px;
-    border-radius: 15px;
   }
 
   .website-card-header {
     align-items: flex-start;
   }
 
-  .website-icon {
-    width: 45px;
-    height: 45px;
-    border-radius: 12px;
-    font-size: 21px;
-  }
-
-  .website-title-area h2 {
-    font-size: 18px;
-  }
-
   .website-status {
-    font-size: 11px;
-    padding: 5px 8px;
+    font-size: 10px;
   }
 
   .website-info-grid {
     grid-template-columns: 1fr;
-    gap: 10px;
   }
 
-  .website-info-item {
-    padding: 13px;
-  }
-
-  .getting-started-card {
-    padding: 18px;
-  }
-}
-
-@media (max-width: 480px) {
-  .dashboard-header {
+  .enquiries-header {
     flex-direction: column;
-    gap: 15px;
   }
 
-  .dashboard-logout {
+  .enquiries-count {
     align-self: flex-start;
   }
 
-  .website-card-header {
-    flex-wrap: wrap;
+  .enquiry-details {
+    grid-template-columns: 1fr;
   }
 
-  .website-status {
-    margin-left: 61px;
-    margin-top: -8px;
+  .enquiry-main {
+    align-items: flex-start;
   }
 
-  .dashboard-edit-button {
-    padding: 15px;
+  .enquiry-footer {
+    flex-direction: column;
+    align-items: stretch;
   }
 
-  .dashboard-footer {
-    margin-top: 24px;
+  .enquiry-contact-button {
+    width: 100%;
+  }
+
+  .getting-started-card {
+    align-items: flex-start;
+    padding: 20px;
   }
 }
