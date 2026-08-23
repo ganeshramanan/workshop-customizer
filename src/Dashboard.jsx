@@ -6,57 +6,211 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
   const businessName = website?.businessName?.trim();
 
+  // ==================================================
+  // CUSTOMER ENQUIRIES STATE
+  // ==================================================
+
   const [enquiries, setEnquiries] = useState([]);
+
   const [enquiriesLoading, setEnquiriesLoading] = useState(true);
+
+  const [enquiriesLoadingMore, setEnquiriesLoadingMore] = useState(false);
+
   const [enquiriesError, setEnquiriesError] = useState("");
+
+  const [enquiryFilter, setEnquiryFilter] = useState("all");
+
+  const [enquiryCounts, setEnquiryCounts] = useState({
+    total: 0,
+    new: 0,
+    contacted: 0,
+    completed: 0,
+  });
+
+  const [hasMoreEnquiries, setHasMoreEnquiries] = useState(false);
+
+  const ENQUIRIES_PER_PAGE = 10;
 
   // ==================================================
   // LOAD CUSTOMER ENQUIRIES
   // ==================================================
 
+  const loadEnquiries = async ({
+    status = enquiryFilter,
+    offset = 0,
+    append = false,
+  } = {}) => {
+    try {
+      if (append) {
+        setEnquiriesLoadingMore(true);
+      } else {
+        setEnquiriesLoading(true);
+        setEnquiriesError("");
+      }
+
+      const response = await fetch(
+        `${API_URL}/api/service-requests/my-requests?status=${status}&limit=${ENQUIRIES_PER_PAGE}&offset=${offset}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Failed to load customer enquiries");
+      }
+
+      const newEnquiries = Array.isArray(result.enquiries)
+        ? result.enquiries
+        : [];
+
+      // ------------------------------------------------
+      // REPLACE OR APPEND
+      // ------------------------------------------------
+
+      setEnquiries((current) =>
+        append ? [...current, ...newEnquiries] : newEnquiries,
+      );
+
+      // ------------------------------------------------
+      // UPDATE COUNTS
+      // ------------------------------------------------
+
+      if (result.counts) {
+        setEnquiryCounts({
+          total: Number(result.counts.total || 0),
+          new: Number(result.counts.new || 0),
+          contacted: Number(result.counts.contacted || 0),
+          completed: Number(result.counts.completed || 0),
+        });
+      }
+
+      // ------------------------------------------------
+      // UPDATE PAGINATION
+      // ------------------------------------------------
+
+      setHasMoreEnquiries(result.pagination?.hasMore || false);
+    } catch (error) {
+      console.error("Load enquiries error:", error);
+
+      if (!append) {
+        setEnquiriesError(error.message || "Failed to load customer enquiries");
+      }
+    } finally {
+      if (append) {
+        setEnquiriesLoadingMore(false);
+      } else {
+        setEnquiriesLoading(false);
+      }
+    }
+  };
+
+  // ==================================================
+  // INITIAL LOAD / FILTER CHANGE
+  // ==================================================
+
   useEffect(() => {
     if (!token) {
       setEnquiriesLoading(false);
-      setEnquiriesError("Authentication token is missing.");
       return;
     }
 
-    const loadEnquiries = async () => {
-      try {
-        setEnquiriesLoading(true);
-        setEnquiriesError("");
+    setEnquiries([]);
 
-        const response = await fetch(
-          `${API_URL}/api/service-requests/my-requests`,
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
+    loadEnquiries({
+      status: enquiryFilter,
+      offset: 0,
+      append: false,
+    });
+  }, [token, enquiryFilter]);
+
+  // ==================================================
+  // LOAD MORE
+  // ==================================================
+
+  const loadMoreEnquiries = () => {
+    if (enquiriesLoadingMore || !hasMoreEnquiries) {
+      return;
+    }
+
+    loadEnquiries({
+      status: enquiryFilter,
+      offset: enquiries.length,
+      append: true,
+    });
+  };
+
+  // ==================================================
+  // CHANGE FILTER
+  // ==================================================
+
+  const changeEnquiryFilter = (newFilter) => {
+    if (newFilter === enquiryFilter) {
+      return;
+    }
+
+    setEnquiryFilter(newFilter);
+  };
+
+  // ==================================================
+  // UPDATE ENQUIRY STATUS
+  // ==================================================
+
+  const updateEnquiryStatus = async (enquiryId, newStatus) => {
+    try {
+      const response = await fetch(
+        `${API_URL}/api/service-requests/${enquiryId}/status`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
-        );
+          body: JSON.stringify({
+            status: newStatus,
+          }),
+        },
+      );
 
-        const result = await response.json();
+      const result = await response.json();
 
-        if (!response.ok) {
-          throw new Error(
-            result.message || "Failed to load customer enquiries",
-          );
-        }
-
-        setEnquiries(Array.isArray(result.enquiries) ? result.enquiries : []);
-      } catch (error) {
-        console.error("Load enquiries error:", error);
-
-        setEnquiriesError(error.message || "Failed to load customer enquiries");
-      } finally {
-        setEnquiriesLoading(false);
+      if (!response.ok) {
+        throw new Error(result.message || "Failed to update enquiry status");
       }
-    };
 
-    loadEnquiries();
-  }, [token]);
+      // ------------------------------------------------
+      // UPDATE CURRENT UI
+      // ------------------------------------------------
+
+      setEnquiries((currentEnquiries) =>
+        currentEnquiries.map((enquiry) =>
+          enquiry.id === enquiryId
+            ? {
+                ...enquiry,
+                status: newStatus,
+              }
+            : enquiry,
+        ),
+      );
+
+      // ------------------------------------------------
+      // REFRESH COUNTS
+      // ------------------------------------------------
+
+      await loadEnquiries({
+        status: enquiryFilter,
+        offset: 0,
+        append: false,
+      });
+    } catch (error) {
+      console.error("Update enquiry status error:", error);
+
+      alert(error.message || "Failed to update enquiry status");
+    }
+  };
 
   // ==================================================
   // FORMAT DATE
@@ -79,7 +233,7 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
   };
 
   // ==================================================
-  // STATUS HELPERS
+  // STATUS CLASS
   // ==================================================
 
   const getStatusClass = (status) => {
@@ -96,6 +250,10 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
     return "enquiry-status new";
   };
 
+  // ==================================================
+  // STATUS LABEL
+  // ==================================================
+
   const getStatusLabel = (status) => {
     const normalizedStatus = String(status || "new").toLowerCase();
 
@@ -110,10 +268,6 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
     return "New";
   };
 
-  const newEnquiries = enquiries.filter(
-    (enquiry) => String(enquiry.status || "new").toLowerCase() === "new",
-  ).length;
-
   // ==================================================
   // DASHBOARD
   // ==================================================
@@ -121,9 +275,9 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
   return (
     <div className="dashboard">
       <div className="dashboard-container">
-        {/* =========================
+        {/* ==================================================
             HEADER
-        ========================= */}
+           ================================================== */}
 
         <header className="dashboard-header">
           <div>
@@ -141,9 +295,9 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
           </button>
         </header>
 
-        {/* =========================
+        {/* ==================================================
             WEBSITE OVERVIEW
-        ========================= */}
+           ================================================== */}
 
         <section className="website-card">
           <div className="website-card-header">
@@ -184,16 +338,20 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
 
           <button className="dashboard-edit-button" onClick={onEditWebsite}>
             <span>✏️</span>
+
             <span>Edit Website</span>
+
             <span className="edit-arrow">→</span>
           </button>
         </section>
 
-        {/* =========================
+        {/* ==================================================
             CUSTOMER ENQUIRIES
-        ========================= */}
+           ================================================== */}
 
         <section className="enquiries-card">
+          {/* HEADER */}
+
           <div className="enquiries-header">
             <div>
               <p className="card-label">CUSTOMER ENQUIRIES</p>
@@ -206,27 +364,83 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
             </div>
 
             <div className="enquiries-count">
-              <strong>{enquiries.length}</strong>
+              <strong>{enquiryCounts.total}</strong>
 
               <span>Total</span>
             </div>
           </div>
 
-          {/* =========================
+          {/* ==================================================
+              FILTERS
+             ================================================== */}
+
+          <div className="enquiry-filters">
+            <button
+              className={
+                enquiryFilter === "all"
+                  ? "enquiry-filter active"
+                  : "enquiry-filter"
+              }
+              onClick={() => changeEnquiryFilter("all")}
+            >
+              All
+              <span>{enquiryCounts.total}</span>
+            </button>
+
+            <button
+              className={
+                enquiryFilter === "new"
+                  ? "enquiry-filter active"
+                  : "enquiry-filter"
+              }
+              onClick={() => changeEnquiryFilter("new")}
+            >
+              New
+              <span>{enquiryCounts.new}</span>
+            </button>
+
+            <button
+              className={
+                enquiryFilter === "contacted"
+                  ? "enquiry-filter active"
+                  : "enquiry-filter"
+              }
+              onClick={() => changeEnquiryFilter("contacted")}
+            >
+              Contacted
+              <span>{enquiryCounts.contacted}</span>
+            </button>
+
+            <button
+              className={
+                enquiryFilter === "completed"
+                  ? "enquiry-filter active"
+                  : "enquiry-filter"
+              }
+              onClick={() => changeEnquiryFilter("completed")}
+            >
+              Completed
+              <span>{enquiryCounts.completed}</span>
+            </button>
+          </div>
+
+          {/* ==================================================
               SUMMARY
-          ========================= */}
+             ================================================== */}
 
-          {!enquiriesLoading && !enquiriesError && enquiries.length > 0 && (
+          {!enquiriesLoading && (
             <div className="enquiries-summary">
-              <span>🔵 {newEnquiries} new</span>
+              <span>🔵 {enquiryCounts.new} new</span>
 
-              <span>📋 {enquiries.length} total</span>
+              <span>📞 {enquiryCounts.contacted} contacted</span>
+
+              <span>✅ {enquiryCounts.completed} completed</span>
             </div>
           )}
 
-          {/* =========================
+          {/* ==================================================
               LOADING
-          ========================= */}
+             ================================================== */}
 
           {enquiriesLoading && (
             <div className="enquiries-empty">
@@ -236,9 +450,9 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
             </div>
           )}
 
-          {/* =========================
+          {/* ==================================================
               ERROR
-          ========================= */}
+             ================================================== */}
 
           {!enquiriesLoading && enquiriesError && (
             <div className="enquiries-error">
@@ -252,26 +466,33 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
             </div>
           )}
 
-          {/* =========================
+          {/* ==================================================
               EMPTY
-          ========================= */}
+             ================================================== */}
 
           {!enquiriesLoading && !enquiriesError && enquiries.length === 0 && (
             <div className="enquiries-empty">
               <div className="enquiries-empty-icon">📭</div>
 
-              <h3>No customer enquiries yet</h3>
+              <h3>
+                {enquiryFilter === "all"
+                  ? "No customer enquiries yet"
+                  : `No ${getStatusLabel(
+                      enquiryFilter,
+                    ).toLowerCase()} enquiries`}
+              </h3>
 
               <p>
-                When customers submit the enquiry form on your website, their
-                requests will appear here.
+                {enquiryFilter === "all"
+                  ? "When customers submit the enquiry form on your website, their requests will appear here."
+                  : "There are currently no enquiries with this status."}
               </p>
             </div>
           )}
 
-          {/* =========================
-              ENQUIRIES LIST
-          ========================= */}
+          {/* ==================================================
+              ENQUIRY LIST
+             ================================================== */}
 
           {!enquiriesLoading && !enquiriesError && enquiries.length > 0 && (
             <div className="enquiries-list">
@@ -299,12 +520,30 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
                       </div>
                     </div>
 
-                    <span className={getStatusClass(enquiry.status)}>
-                      {getStatusLabel(enquiry.status)}
-                    </span>
+                    {/* STATUS */}
+
+                    <div className="enquiry-status-control">
+                      <span className={getStatusClass(enquiry.status)}>
+                        {getStatusLabel(enquiry.status)}
+                      </span>
+
+                      <select
+                        value={String(enquiry.status || "new").toLowerCase()}
+                        onChange={(event) =>
+                          updateEnquiryStatus(enquiry.id, event.target.value)
+                        }
+                        className="enquiry-status-select"
+                      >
+                        <option value="new">New</option>
+
+                        <option value="contacted">Contacted</option>
+
+                        <option value="completed">Completed</option>
+                      </select>
+                    </div>
                   </div>
 
-                  {/* ENQUIRY DETAILS */}
+                  {/* DETAILS */}
 
                   <div className="enquiry-details">
                     {enquiry.service && (
@@ -368,11 +607,30 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
               ))}
             </div>
           )}
+
+          {/* ==================================================
+              LOAD MORE
+             ================================================== */}
+
+          {!enquiriesLoading &&
+            !enquiriesError &&
+            enquiries.length > 0 &&
+            hasMoreEnquiries && (
+              <div className="enquiries-load-more">
+                <button
+                  className="load-more-button"
+                  onClick={loadMoreEnquiries}
+                  disabled={enquiriesLoadingMore}
+                >
+                  {enquiriesLoadingMore ? "Loading..." : "Load More Enquiries"}
+                </button>
+              </div>
+            )}
         </section>
 
-        {/* =========================
+        {/* ==================================================
             GET STARTED
-        ========================= */}
+           ================================================== */}
 
         <section className="getting-started-card">
           <div className="getting-started-icon">🚀</div>
@@ -387,9 +645,9 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
           </div>
         </section>
 
-        {/* =========================
+        {/* ==================================================
             FOOTER
-        ========================= */}
+           ================================================== */}
 
         <footer className="dashboard-footer">
           <span>Website Builder</span>

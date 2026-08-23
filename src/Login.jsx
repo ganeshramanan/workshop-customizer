@@ -1,11 +1,7 @@
 import { useState } from "react";
+import "./Login.css";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
-
-console.log("=================================");
-console.log("API URL being used:", API_URL);
-console.log("VITE_API_URL:", import.meta.env.VITE_API_URL);
-console.log("=================================");
 
 function Login({ onLogin }) {
   const [email, setEmail] = useState("");
@@ -29,7 +25,7 @@ function Login({ onLogin }) {
         },
         body: JSON.stringify({
           email: email.trim(),
-          password: password,
+          password,
         }),
       });
 
@@ -69,38 +65,89 @@ function Login({ onLogin }) {
 
   return (
     <div className="login-page">
+      <div className="login-background-shape shape-one" />
+      <div className="login-background-shape shape-two" />
+
       <div className="login-card">
-        <h1>Workshop Customizer</h1>
+        {/* BRAND */}
+        <div className="login-brand">
+          <div className="brand-icon">✦</div>
 
-        <p>Login to manage your workshop website</p>
+          <div className="brand-name">SiteCraft</div>
 
-        <form onSubmit={handleLogin}>
-          <label>Email</label>
+          <div className="brand-tagline">Build your business online.</div>
+        </div>
 
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Enter your email"
-            required
-          />
+        {/* LOGIN INTRO */}
+        <div className="login-intro">
+          <h1>Welcome back</h1>
 
-          <label>Password</label>
+          <p>Sign in to manage your website</p>
+        </div>
 
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Enter your password"
-            required
-          />
+        {/* LOGIN FORM */}
+        <form className="login-form" onSubmit={handleLogin}>
+          {/* EMAIL */}
+          <div className="form-group">
+            <label htmlFor="email">Email address</label>
 
-          {error && <p className="login-error">{error}</p>}
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email address"
+              autoComplete="email"
+              required
+            />
+          </div>
 
-          <button type="submit" disabled={loading}>
-            {loading ? "Logging in..." : "Login"}
+          {/* PASSWORD */}
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
+
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
+              autoComplete="current-password"
+              required
+            />
+          </div>
+
+          {/* ERROR */}
+          {error && (
+            <div className="login-error">
+              <span className="error-icon">!</span>
+
+              <span>{error}</span>
+            </div>
+          )}
+
+          {/* BUTTON */}
+          <button type="submit" className="login-button" disabled={loading}>
+            {loading ? (
+              <>
+                <span className="button-spinner" />
+                Signing in...
+              </>
+            ) : (
+              <>
+                Sign in
+                <span className="button-arrow">→</span>
+              </>
+            )}
           </button>
         </form>
+
+        {/* FOOTER */}
+        <div className="login-footer">
+          <span>SiteCraft</span>
+          <span className="footer-dot">•</span>
+          <span>Your business, your website.</span>
+        </div>
       </div>
     </div>
   );
