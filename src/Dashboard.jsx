@@ -1,41 +1,43 @@
 import { useEffect, useState } from "react";
 import {
-  CalendarDays,
-  CarFront,
+  ArrowRight,
   CheckCircle2,
-  ChevronRight,
+  ChevronDown,
+  ChevronUp,
+  Clock3,
   Globe2,
+  LayoutDashboard,
   LogOut,
   MessageSquare,
-  Pencil,
   Phone,
+  Settings,
+  UserRound,
   Users,
   Wrench,
+  Car,
+  CalendarDays,
+  Mail,
 } from "lucide-react";
 
 import "./Dashboard.css";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
-const RECENT_ENQUIRIES_LIMIT = 3;
-const ENQUIRIES_PER_PAGE = 10;
-
 function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
-  const businessName = website?.businessName?.trim() || "Your Business";
+  const businessName = website?.businessName?.trim() || "Your Website";
 
   // ==================================================
-  // CUSTOMER ENQUIRIES STATE
+  // ENQUIRY STATE
   // ==================================================
 
   const [enquiries, setEnquiries] = useState([]);
-
   const [enquiriesLoading, setEnquiriesLoading] = useState(true);
-
   const [enquiriesLoadingMore, setEnquiriesLoadingMore] = useState(false);
-
   const [enquiriesError, setEnquiriesError] = useState("");
 
   const [enquiryFilter, setEnquiryFilter] = useState("all");
+
+  const [expandedEnquiry, setExpandedEnquiry] = useState(null);
 
   const [enquiryCounts, setEnquiryCounts] = useState({
     total: 0,
@@ -46,7 +48,7 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
 
   const [hasMoreEnquiries, setHasMoreEnquiries] = useState(false);
 
-  const [showAllEnquiries, setShowAllEnquiries] = useState(false);
+  const ENQUIRIES_PER_PAGE = 10;
 
   // ==================================================
   // LOAD ENQUIRIES
@@ -77,7 +79,7 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.message || "Failed to load customer enquiries");
+        throw new Error(result.message || "Failed to load enquiries");
       }
 
       const newEnquiries = Array.isArray(result.enquiries)
@@ -114,7 +116,7 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
   };
 
   // ==================================================
-  // INITIAL LOAD / FILTER CHANGE
+  // INITIAL LOAD / FILTER
   // ==================================================
 
   useEffect(() => {
@@ -124,7 +126,7 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
     }
 
     setEnquiries([]);
-    setShowAllEnquiries(false);
+    setExpandedEnquiry(null);
 
     loadEnquiries({
       status: enquiryFilter,
@@ -132,18 +134,6 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
       append: false,
     });
   }, [token, enquiryFilter]);
-
-  // ==================================================
-  // FILTER
-  // ==================================================
-
-  const changeEnquiryFilter = (newFilter) => {
-    if (newFilter === enquiryFilter) {
-      return;
-    }
-
-    setEnquiryFilter(newFilter);
-  };
 
   // ==================================================
   // LOAD MORE
@@ -162,7 +152,7 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
   };
 
   // ==================================================
-  // UPDATE ENQUIRY STATUS
+  // UPDATE STATUS
   // ==================================================
 
   const updateEnquiryStatus = async (enquiryId, newStatus) => {
@@ -187,17 +177,6 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
         throw new Error(result.message || "Failed to update enquiry status");
       }
 
-      setEnquiries((currentEnquiries) =>
-        currentEnquiries.map((enquiry) =>
-          enquiry.id === enquiryId
-            ? {
-                ...enquiry,
-                status: newStatus,
-              }
-            : enquiry,
-        ),
-      );
-
       await loadEnquiries({
         status: enquiryFilter,
         offset: 0,
@@ -211,7 +190,7 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
   };
 
   // ==================================================
-  // DATE FORMAT
+  // HELPERS
   // ==================================================
 
   const formatDate = (date) => {
@@ -230,247 +209,267 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
     }
   };
 
-  // ==================================================
-  // STATUS
-  // ==================================================
-
-  const getStatusClass = (status) => {
-    const normalizedStatus = String(status || "new").toLowerCase();
-
-    if (normalizedStatus === "completed") {
-      return "status-badge status-completed";
-    }
-
-    if (normalizedStatus === "contacted") {
-      return "status-badge status-contacted";
-    }
-
-    return "status-badge status-new";
-  };
-
   const getStatusLabel = (status) => {
-    const normalizedStatus = String(status || "new").toLowerCase();
+    const normalized = String(status || "new").toLowerCase();
 
-    if (normalizedStatus === "completed") {
+    if (normalized === "completed") {
       return "Completed";
     }
 
-    if (normalizedStatus === "contacted") {
+    if (normalized === "contacted") {
       return "Contacted";
     }
 
     return "New";
   };
 
-  // ==================================================
-  // VISIBLE ENQUIRIES
-  // ==================================================
+  const getStatusClass = (status) => {
+    const normalized = String(status || "new").toLowerCase();
 
-  const visibleEnquiries = showAllEnquiries
-    ? enquiries
-    : enquiries.slice(0, RECENT_ENQUIRIES_LIMIT);
+    if (normalized === "completed") {
+      return "status-badge completed";
+    }
+
+    if (normalized === "contacted") {
+      return "status-badge contacted";
+    }
+
+    return "status-badge new";
+  };
+
+  const getStatusIcon = (status) => {
+    const normalized = String(status || "new").toLowerCase();
+
+    if (normalized === "completed") {
+      return <CheckCircle2 size={14} />;
+    }
+
+    if (normalized === "contacted") {
+      return <Phone size={14} />;
+    }
+
+    return <Clock3 size={14} />;
+  };
+
+  const toggleEnquiry = (id) => {
+    setExpandedEnquiry((current) => (current === id ? null : id));
+  };
 
   // ==================================================
-  // DASHBOARD
+  // RENDER
   // ==================================================
 
   return (
     <div className="dashboard">
       <div className="dashboard-container">
-        {/* ==========================================
-            HEADER
-           ========================================== */}
+        {/* ==================================================
+            TOP NAVIGATION
+           ================================================== */}
 
-        <header className="dashboard-header">
-          <div className="dashboard-header-content">
-            <div className="dashboard-brand-row">
-              <div className="dashboard-brand-icon">
-                <Globe2 size={17} strokeWidth={2.2} />
+        <header className="dashboard-topbar">
+          <div className="brand-area">
+            <div className="brand-mark">
+              <LayoutDashboard size={20} />
+            </div>
+
+            <div>
+              <div className="brand-name">SiteCraft</div>
+
+              <div className="brand-caption">Business website platform</div>
+            </div>
+          </div>
+
+          <div className="topbar-actions">
+            <div className="user-profile">
+              <div className="user-avatar">
+                <UserRound size={17} />
               </div>
 
-              <span>SiteCraft</span>
+              <div className="user-profile-text">
+                <strong>{user?.name || "Account"}</strong>
+
+                <span>{user?.email || "Business owner"}</span>
+              </div>
             </div>
+
+            <button className="logout-button" onClick={onLogout} title="Logout">
+              <LogOut size={17} />
+              <span>Logout</span>
+            </button>
+          </div>
+        </header>
+
+        {/* ==================================================
+            WELCOME
+           ================================================== */}
+
+        <section className="welcome-section">
+          <div>
+            <div className="section-kicker">DASHBOARD</div>
 
             <h1>Welcome back, {user?.name || "there"}</h1>
 
-            <p className="dashboard-subtitle">
-              Here's an overview of your website and customer activity.
-            </p>
+            <p>Manage your website and stay on top of customer enquiries.</p>
           </div>
 
-          <button className="dashboard-logout" onClick={onLogout}>
-            <LogOut size={16} />
-            <span>Logout</span>
-          </button>
-        </header>
-
-        {/* ==========================================
-            WEBSITE OVERVIEW
-           ========================================== */}
-
-        <section className="website-card">
-          <div className="website-card-top">
-            <div className="website-title-group">
-              <div className="website-icon">
-                <Globe2 size={21} strokeWidth={2} />
-              </div>
-
-              <div>
-                <span className="section-eyebrow">YOUR WEBSITE</span>
-
-                <h2>{businessName}</h2>
-
-                <p>Your business website is ready to customize.</p>
-              </div>
-            </div>
-
-            <span className="website-status">
-              <CheckCircle2 size={14} />
-              Published
-            </span>
-          </div>
-
-          <div className="website-divider" />
-
-          <div className="website-stats">
-            <div className="website-stat">
-              <span>Theme</span>
-              <strong>{website?.theme || "Default"}</strong>
-            </div>
-
-            <div className="website-stat">
-              <span>Services</span>
-              <strong>
-                {Array.isArray(website?.services) ? website.services.length : 0}
-              </strong>
-            </div>
-
-            <div className="website-stat">
-              <span>Website ID</span>
-              <strong>{website?.id || "-"}</strong>
-            </div>
-          </div>
-
-          <button className="customize-button" onClick={onEditWebsite}>
-            <Pencil size={16} />
-            <span>Customize Website</span>
-            <ChevronRight size={17} className="customize-arrow" />
+          <button className="quick-edit-button" onClick={onEditWebsite}>
+            <Settings size={17} />
+            Customize website
+            <ArrowRight size={16} />
           </button>
         </section>
 
-        {/* ==========================================
-            CUSTOMER ACTIVITY
-           ========================================== */}
+        {/* ==================================================
+            WEBSITE HERO
+           ================================================== */}
 
-        <section className="activity-section">
-          <div className="activity-header">
+        <section className="website-hero">
+          <div className="website-hero-main">
+            <div className="website-logo">
+              <Globe2 size={25} />
+            </div>
+
+            <div className="website-hero-content">
+              <div className="website-label">YOUR WEBSITE</div>
+
+              <h2>{businessName}</h2>
+
+              <div className="website-meta">
+                <span className="ready-indicator">
+                  <span className="ready-dot" />
+                  Website ready
+                </span>
+
+                <span className="meta-divider">•</span>
+
+                <span>
+                  {Array.isArray(website?.services)
+                    ? website.services.length
+                    : 0}{" "}
+                  services
+                </span>
+
+                <span className="meta-divider">•</span>
+
+                <span>{website?.theme || "Default"} theme</span>
+              </div>
+            </div>
+          </div>
+
+          <button className="website-edit-button" onClick={onEditWebsite}>
+            Edit website
+            <ArrowRight size={16} />
+          </button>
+        </section>
+
+        {/* ==================================================
+            STATISTICS
+           ================================================== */}
+
+        <section className="stats-grid">
+          <div className="stat-card">
+            <div className="stat-icon total">
+              <MessageSquare size={18} />
+            </div>
+
             <div>
-              <span className="section-eyebrow">CUSTOMER ACTIVITY</span>
-
-              <h2>Enquiries</h2>
-
-              <p>Keep track of requests from your website visitors.</p>
-            </div>
-
-            <div className="activity-total">
+              <span>Total enquiries</span>
               <strong>{enquiryCounts.total}</strong>
-
-              <span>Total</span>
             </div>
           </div>
 
-          {/* ========================================
-              SUMMARY STATS
-             ======================================== */}
+          <div className="stat-card">
+            <div className="stat-icon new">
+              <Clock3 size={18} />
+            </div>
 
-          <div className="enquiry-stats">
-            <button
-              className={`enquiry-stat-card ${
-                enquiryFilter === "all" ? "active" : ""
-              }`}
-              onClick={() => changeEnquiryFilter("all")}
-            >
-              <div className="stat-icon stat-icon-total">
-                <MessageSquare size={17} />
-              </div>
-
-              <div>
-                <strong>{enquiryCounts.total}</strong>
-
-                <span>Total enquiries</span>
-              </div>
-            </button>
-
-            <button
-              className={`enquiry-stat-card ${
-                enquiryFilter === "new" ? "active" : ""
-              }`}
-              onClick={() => changeEnquiryFilter("new")}
-            >
-              <div className="stat-icon stat-icon-new">
-                <MessageSquare size={17} />
-              </div>
-
-              <div>
-                <strong>{enquiryCounts.new}</strong>
-
-                <span>New</span>
-              </div>
-            </button>
-
-            <button
-              className={`enquiry-stat-card ${
-                enquiryFilter === "contacted" ? "active" : ""
-              }`}
-              onClick={() => changeEnquiryFilter("contacted")}
-            >
-              <div className="stat-icon stat-icon-contacted">
-                <Phone size={17} />
-              </div>
-
-              <div>
-                <strong>{enquiryCounts.contacted}</strong>
-
-                <span>Contacted</span>
-              </div>
-            </button>
-
-            <button
-              className={`enquiry-stat-card ${
-                enquiryFilter === "completed" ? "active" : ""
-              }`}
-              onClick={() => changeEnquiryFilter("completed")}
-            >
-              <div className="stat-icon stat-icon-completed">
-                <CheckCircle2 size={17} />
-              </div>
-
-              <div>
-                <strong>{enquiryCounts.completed}</strong>
-
-                <span>Completed</span>
-              </div>
-            </button>
+            <div>
+              <span>New</span>
+              <strong>{enquiryCounts.new}</strong>
+            </div>
           </div>
 
-          {/* ========================================
-              LOADING
-             ======================================== */}
+          <div className="stat-card">
+            <div className="stat-icon contacted">
+              <Phone size={18} />
+            </div>
+
+            <div>
+              <span>Contacted</span>
+              <strong>{enquiryCounts.contacted}</strong>
+            </div>
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-icon completed">
+              <CheckCircle2 size={18} />
+            </div>
+
+            <div>
+              <span>Completed</span>
+              <strong>{enquiryCounts.completed}</strong>
+            </div>
+          </div>
+        </section>
+
+        {/* ==================================================
+            ENQUIRIES
+           ================================================== */}
+
+        <section className="enquiries-section">
+          <div className="enquiries-section-header">
+            <div>
+              <div className="section-kicker">CUSTOMER ACTIVITY</div>
+
+              <h2>Recent enquiries</h2>
+
+              <p>Review and manage requests from your website.</p>
+            </div>
+
+            <div className="enquiries-total">
+              <Users size={16} />
+              <span>{enquiryCounts.total} total</span>
+            </div>
+          </div>
+
+          {/* FILTERS */}
+
+          <div className="enquiry-filter-bar">
+            {[
+              ["all", "All", enquiryCounts.total],
+              ["new", "New", enquiryCounts.new],
+              ["contacted", "Contacted", enquiryCounts.contacted],
+              ["completed", "Completed", enquiryCounts.completed],
+            ].map(([value, label, count]) => (
+              <button
+                key={value}
+                className={
+                  enquiryFilter === value
+                    ? "filter-button active"
+                    : "filter-button"
+                }
+                onClick={() => setEnquiryFilter(value)}
+              >
+                {label}
+                <span>{count}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* LOADING */}
 
           {enquiriesLoading && (
-            <div className="enquiries-state">
-              <div className="enquiry-loading-spinner" />
-              <p>Loading enquiries...</p>
+            <div className="dashboard-loading">
+              <div className="loading-spinner" />
+              <span>Loading enquiries...</span>
             </div>
           )}
 
-          {/* ========================================
-              ERROR
-             ======================================== */}
+          {/* ERROR */}
 
           {!enquiriesLoading && enquiriesError && (
-            <div className="enquiries-error">
-              <MessageSquare size={19} />
+            <div className="dashboard-error">
+              <MessageSquare size={20} />
 
               <div>
                 <strong>Unable to load enquiries</strong>
@@ -480,14 +479,12 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
             </div>
           )}
 
-          {/* ========================================
-              EMPTY
-             ======================================== */}
+          {/* EMPTY */}
 
           {!enquiriesLoading && !enquiriesError && enquiries.length === 0 && (
-            <div className="enquiries-state">
+            <div className="dashboard-empty">
               <div className="empty-icon">
-                <MessageSquare size={25} />
+                <MessageSquare size={24} />
               </div>
 
               <h3>
@@ -506,173 +503,206 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
             </div>
           )}
 
-          {/* ========================================
-              RECENT ENQUIRIES
-             ======================================== */}
+          {/* ENQUIRY LIST */}
 
           {!enquiriesLoading && !enquiriesError && enquiries.length > 0 && (
-            <>
-              <div className="recent-header">
-                <div>
-                  <h3>
-                    {showAllEnquiries ? "All enquiries" : "Recent enquiries"}
-                  </h3>
-
-                  {!showAllEnquiries && enquiries.length > 3 && (
-                    <span>Showing the latest 3</span>
-                  )}
-                </div>
-
-                {enquiries.length > 3 && (
-                  <button
-                    className="view-all-button"
-                    onClick={() => setShowAllEnquiries((current) => !current)}
-                  >
-                    {showAllEnquiries ? "Show recent" : "View all enquiries"}
-
-                    <ChevronRight
-                      size={15}
-                      className={showAllEnquiries ? "rotate-left" : ""}
-                    />
-                  </button>
-                )}
+            <div className="enquiry-table">
+              <div className="enquiry-table-header">
+                <span>Customer</span>
+                <span>Request</span>
+                <span>Status</span>
+                <span />
               </div>
 
-              <div className="enquiries-list">
-                {visibleEnquiries.map((enquiry) => (
-                  <div className="enquiry-item" key={enquiry.id}>
-                    <div className="enquiry-main">
-                      <div className="enquiry-customer">
-                        <div className="enquiry-avatar">
+              {enquiries.map((enquiry) => {
+                const isExpanded = expandedEnquiry === enquiry.id;
+
+                return (
+                  <div
+                    className={
+                      isExpanded
+                        ? "enquiry-row-wrapper expanded"
+                        : "enquiry-row-wrapper"
+                    }
+                    key={enquiry.id}
+                  >
+                    {/* COMPACT ROW */}
+
+                    <div className="enquiry-row">
+                      <div className="customer-cell">
+                        <div className="customer-avatar">
                           {String(enquiry.customerName || "C")
                             .charAt(0)
                             .toUpperCase()}
                         </div>
 
-                        <div>
-                          <h3>{enquiry.customerName || "Customer"}</h3>
+                        <div className="customer-info">
+                          <strong>{enquiry.customerName || "Customer"}</strong>
 
+                          <a href={`tel:${enquiry.phone}`}>{enquiry.phone}</a>
+                        </div>
+                      </div>
+
+                      <div className="request-cell">
+                        <strong>{enquiry.service || "General enquiry"}</strong>
+
+                        {enquiry.vehicle && <span>{enquiry.vehicle}</span>}
+                      </div>
+
+                      <div className="status-cell">
+                        <div className="status-control">
+                          <span className={getStatusClass(enquiry.status)}>
+                            {getStatusIcon(enquiry.status)}
+
+                            {getStatusLabel(enquiry.status)}
+                          </span>
+
+                          <select
+                            value={String(
+                              enquiry.status || "new",
+                            ).toLowerCase()}
+                            onChange={(event) =>
+                              updateEnquiryStatus(
+                                enquiry.id,
+                                event.target.value,
+                              )
+                            }
+                          >
+                            <option value="new">New</option>
+
+                            <option value="contacted">Contacted</option>
+
+                            <option value="completed">Completed</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <button
+                        className="expand-button"
+                        onClick={() => toggleEnquiry(enquiry.id)}
+                        aria-label={
+                          isExpanded ? "Collapse enquiry" : "View enquiry"
+                        }
+                      >
+                        {isExpanded ? (
+                          <ChevronUp size={18} />
+                        ) : (
+                          <ChevronDown size={18} />
+                        )}
+                      </button>
+                    </div>
+
+                    {/* EXPANDED DETAILS */}
+
+                    {isExpanded && (
+                      <div className="enquiry-expanded">
+                        <div className="expanded-grid">
+                          {enquiry.service && (
+                            <div className="expanded-detail">
+                              <Wrench size={16} />
+
+                              <div>
+                                <span>Service</span>
+
+                                <strong>{enquiry.service}</strong>
+                              </div>
+                            </div>
+                          )}
+
+                          {enquiry.vehicle && (
+                            <div className="expanded-detail">
+                              <Car size={16} />
+
+                              <div>
+                                <span>Vehicle</span>
+
+                                <strong>{enquiry.vehicle}</strong>
+                              </div>
+                            </div>
+                          )}
+
+                          {enquiry.preferredDate && (
+                            <div className="expanded-detail">
+                              <CalendarDays size={16} />
+
+                              <div>
+                                <span>Preferred date</span>
+
+                                <strong>
+                                  {formatDate(enquiry.preferredDate)}
+                                </strong>
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="expanded-detail">
+                            <Mail size={16} />
+
+                            <div>
+                              <span>Received</span>
+
+                              <strong>{formatDate(enquiry.createdAt)}</strong>
+                            </div>
+                          </div>
+                        </div>
+
+                        {enquiry.message && (
+                          <div className="expanded-message">
+                            <span>Customer message</span>
+
+                            <p>{enquiry.message}</p>
+                          </div>
+                        )}
+
+                        <div className="expanded-actions">
                           <a
                             href={`tel:${enquiry.phone}`}
-                            className="enquiry-phone"
+                            className="contact-customer-button"
                           >
-                            <Phone size={13} />
-                            {enquiry.phone}
+                            <Phone size={16} />
+                            Contact customer
                           </a>
                         </div>
                       </div>
-
-                      <div className="enquiry-status-control">
-                        <span className={getStatusClass(enquiry.status)}>
-                          {getStatusLabel(enquiry.status)}
-                        </span>
-
-                        <select
-                          value={String(enquiry.status || "new").toLowerCase()}
-                          onChange={(event) =>
-                            updateEnquiryStatus(enquiry.id, event.target.value)
-                          }
-                          className="enquiry-status-select"
-                        >
-                          <option value="new">New</option>
-
-                          <option value="contacted">Contacted</option>
-
-                          <option value="completed">Completed</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="enquiry-details">
-                      {enquiry.service && (
-                        <div className="enquiry-detail">
-                          <Wrench size={16} />
-
-                          <div>
-                            <small>Service</small>
-
-                            <strong>{enquiry.service}</strong>
-                          </div>
-                        </div>
-                      )}
-
-                      {enquiry.vehicle && (
-                        <div className="enquiry-detail">
-                          <CarFront size={16} />
-
-                          <div>
-                            <small>Vehicle</small>
-
-                            <strong>{enquiry.vehicle}</strong>
-                          </div>
-                        </div>
-                      )}
-
-                      {enquiry.preferredDate && (
-                        <div className="enquiry-detail">
-                          <CalendarDays size={16} />
-
-                          <div>
-                            <small>Preferred date</small>
-
-                            <strong>{formatDate(enquiry.preferredDate)}</strong>
-                          </div>
-                        </div>
-                      )}
-
-                      {enquiry.message && (
-                        <div className="enquiry-message">
-                          <small>Message</small>
-
-                          <p>{enquiry.message}</p>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="enquiry-footer">
-                      <span>Received {formatDate(enquiry.createdAt)}</span>
-
-                      <a
-                        href={`tel:${enquiry.phone}`}
-                        className="enquiry-contact-button"
-                      >
-                        <Phone size={14} />
-                        Contact
-                      </a>
-                    </div>
+                    )}
                   </div>
-                ))}
-              </div>
-
-              {/* ==================================
-                    LOAD MORE
-                   ================================== */}
-
-              {showAllEnquiries && hasMoreEnquiries && (
-                <div className="enquiries-load-more">
-                  <button
-                    className="load-more-button"
-                    onClick={loadMoreEnquiries}
-                    disabled={enquiriesLoadingMore}
-                  >
-                    {enquiriesLoadingMore
-                      ? "Loading..."
-                      : "Load more enquiries"}
-                  </button>
-                </div>
-              )}
-            </>
+                );
+              })}
+            </div>
           )}
+
+          {/* LOAD MORE */}
+
+          {!enquiriesLoading &&
+            !enquiriesError &&
+            enquiries.length > 0 &&
+            hasMoreEnquiries && (
+              <div className="load-more-container">
+                <button
+                  className="load-more-button"
+                  onClick={loadMoreEnquiries}
+                  disabled={enquiriesLoadingMore}
+                >
+                  {enquiriesLoadingMore ? "Loading..." : "Load more enquiries"}
+
+                  <ChevronDown size={16} />
+                </button>
+              </div>
+            )}
         </section>
 
-        {/* ==========================================
+        {/* ==================================================
             FOOTER
-           ========================================== */}
+           ================================================== */}
 
         <footer className="dashboard-footer">
-          <span>SiteCraft</span>
-          <span>•</span>
-          <span>Business Website Platform</span>
+          <span className="footer-brand">SiteCraft</span>
+
+          <span>Business website platform</span>
+
+          <span className="footer-dot">•</span>
+
+          <span>Dashboard</span>
         </footer>
       </div>
     </div>
