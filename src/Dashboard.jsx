@@ -10,7 +10,6 @@ import {
   LogOut,
   MessageSquare,
   Phone,
-  Settings,
   UserRound,
   Users,
   Wrench,
@@ -311,12 +310,6 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
 
             <p>Manage your website and stay on top of customer enquiries.</p>
           </div>
-
-          <button className="quick-edit-button" onClick={onEditWebsite}>
-            <Settings size={17} />
-            Customize website
-            <ArrowRight size={16} />
-          </button>
         </section>
 
         {/* ==================================================
