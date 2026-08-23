@@ -11,13 +11,9 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
   // ==================================================
 
   const [enquiries, setEnquiries] = useState([]);
-
   const [enquiriesLoading, setEnquiriesLoading] = useState(true);
-
   const [enquiriesLoadingMore, setEnquiriesLoadingMore] = useState(false);
-
   const [enquiriesError, setEnquiriesError] = useState("");
-
   const [enquiryFilter, setEnquiryFilter] = useState("all");
 
   const [enquiryCounts, setEnquiryCounts] = useState({
@@ -67,17 +63,9 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
         ? result.enquiries
         : [];
 
-      // ------------------------------------------------
-      // REPLACE OR APPEND
-      // ------------------------------------------------
-
       setEnquiries((current) =>
         append ? [...current, ...newEnquiries] : newEnquiries,
       );
-
-      // ------------------------------------------------
-      // UPDATE COUNTS
-      // ------------------------------------------------
 
       if (result.counts) {
         setEnquiryCounts({
@@ -87,10 +75,6 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
           completed: Number(result.counts.completed || 0),
         });
       }
-
-      // ------------------------------------------------
-      // UPDATE PAGINATION
-      // ------------------------------------------------
 
       setHasMoreEnquiries(result.pagination?.hasMore || false);
     } catch (error) {
@@ -181,10 +165,6 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
         throw new Error(result.message || "Failed to update enquiry status");
       }
 
-      // ------------------------------------------------
-      // UPDATE CURRENT UI
-      // ------------------------------------------------
-
       setEnquiries((currentEnquiries) =>
         currentEnquiries.map((enquiry) =>
           enquiry.id === enquiryId
@@ -195,10 +175,6 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
             : enquiry,
         ),
       );
-
-      // ------------------------------------------------
-      // REFRESH COUNTS
-      // ------------------------------------------------
 
       await loadEnquiries({
         status: enquiryFilter,
@@ -233,7 +209,7 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
   };
 
   // ==================================================
-  // STATUS CLASS
+  // STATUS HELPERS
   // ==================================================
 
   const getStatusClass = (status) => {
@@ -249,10 +225,6 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
 
     return "enquiry-status new";
   };
-
-  // ==================================================
-  // STATUS LABEL
-  // ==================================================
 
   const getStatusLabel = (status) => {
     const normalizedStatus = String(status || "new").toLowerCase();
@@ -276,40 +248,106 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
     <div className="dashboard">
       <div className="dashboard-container">
         {/* ==================================================
-            HEADER
+            TOP HEADER
            ================================================== */}
 
         <header className="dashboard-header">
-          <div>
-            <p className="dashboard-eyebrow">WEBSITE BUILDER</p>
+          <div className="dashboard-brand-area">
+            <div className="dashboard-brand">
+              <div className="dashboard-brand-icon">✦</div>
 
-            <h1>Welcome, {user?.name || "Customer"} 👋</h1>
+              <span>SiteCraft</span>
+            </div>
 
-            <p className="dashboard-subtitle">
-              Manage and customize your business website.
-            </p>
+            <div className="dashboard-welcome">
+              <p className="dashboard-eyebrow">DASHBOARD</p>
+
+              <h1>Good morning, {user?.name || "there"} 👋</h1>
+
+              <p className="dashboard-subtitle">
+                Everything you need to manage your online presence.
+              </p>
+            </div>
           </div>
 
           <button className="dashboard-logout" onClick={onLogout}>
+            <span>↪</span>
             Logout
           </button>
         </header>
 
         {/* ==================================================
-            WEBSITE OVERVIEW
+            QUICK OVERVIEW
+           ================================================== */}
+
+        <section className="dashboard-summary">
+          <div className="summary-card summary-website">
+            <div className="summary-card-top">
+              <div className="summary-icon">🌐</div>
+
+              <span className="summary-status">Live</span>
+            </div>
+
+            <div className="summary-value">Website</div>
+
+            <div className="summary-label">Your online presence</div>
+          </div>
+
+          <div className="summary-card">
+            <div className="summary-card-top">
+              <div className="summary-icon blue">📩</div>
+            </div>
+
+            <div className="summary-value">{enquiryCounts.total}</div>
+
+            <div className="summary-label">Total enquiries</div>
+          </div>
+
+          <div className="summary-card">
+            <div className="summary-card-top">
+              <div className="summary-icon orange">🔵</div>
+            </div>
+
+            <div className="summary-value">{enquiryCounts.new}</div>
+
+            <div className="summary-label">New enquiries</div>
+          </div>
+
+          <div className="summary-card">
+            <div className="summary-card-top">
+              <div className="summary-icon green">✓</div>
+            </div>
+
+            <div className="summary-value">{enquiryCounts.completed}</div>
+
+            <div className="summary-label">Completed</div>
+          </div>
+        </section>
+
+        {/* ==================================================
+            WEBSITE
            ================================================== */}
 
         <section className="website-card">
           <div className="website-card-header">
-            <div className="website-icon">🏪</div>
+            <div className="website-card-heading">
+              <div className="website-icon">🌐</div>
 
-            <div className="website-title-area">
-              <p className="card-label">YOUR WEBSITE</p>
+              <div className="website-title-area">
+                <p className="card-label">YOUR WEBSITE</p>
 
-              <h2>{businessName || "Your Business Website"}</h2>
+                <h2>{businessName || "Your Business Website"}</h2>
+
+                <p className="website-description">
+                  Manage your website content and appearance.
+                </p>
+              </div>
             </div>
 
-            <span className="website-status">● Ready</span>
+            <span className="website-status">
+              <span className="status-dot" />
+              Ready
+            </span>
           </div>
 
           <div className="website-divider" />
@@ -317,13 +355,11 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
           <div className="website-info-grid">
             <div className="website-info-item">
               <span>Theme</span>
-
               <strong>{website?.theme || "Blue"}</strong>
             </div>
 
             <div className="website-info-item">
               <span>Services</span>
-
               <strong>
                 {Array.isArray(website?.services) ? website.services.length : 0}
               </strong>
@@ -331,16 +367,13 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
 
             <div className="website-info-item">
               <span>Website ID</span>
-
               <strong>{website?.id || "-"}</strong>
             </div>
           </div>
 
           <button className="dashboard-edit-button" onClick={onEditWebsite}>
             <span>✏️</span>
-
             <span>Edit Website</span>
-
             <span className="edit-arrow">→</span>
           </button>
         </section>
@@ -350,16 +383,14 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
            ================================================== */}
 
         <section className="enquiries-card">
-          {/* HEADER */}
-
           <div className="enquiries-header">
             <div>
               <p className="card-label">CUSTOMER ENQUIRIES</p>
 
-              <h2>Enquiries from your website</h2>
+              <h2>Customer enquiries</h2>
 
               <p className="enquiries-subtitle">
-                Manage requests submitted by your customers.
+                Keep track of customers who contacted you.
               </p>
             </div>
 
@@ -430,11 +461,20 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
 
           {!enquiriesLoading && (
             <div className="enquiries-summary">
-              <span>🔵 {enquiryCounts.new} new</span>
+              <span>
+                <b className="summary-dot new-dot" />
+                {enquiryCounts.new} new
+              </span>
 
-              <span>📞 {enquiryCounts.contacted} contacted</span>
+              <span>
+                <b className="summary-dot contacted-dot" />
+                {enquiryCounts.contacted} contacted
+              </span>
 
-              <span>✅ {enquiryCounts.completed} completed</span>
+              <span>
+                <b className="summary-dot completed-dot" />
+                {enquiryCounts.completed} completed
+              </span>
             </div>
           )}
 
@@ -551,7 +591,7 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
                         <span>🛠️</span>
 
                         <div>
-                          <small>Service / Requirement</small>
+                          <small>Service</small>
 
                           <strong>{enquiry.service}</strong>
                         </div>
@@ -629,32 +669,17 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
         </section>
 
         {/* ==================================================
-            GET STARTED
-           ================================================== */}
-
-        <section className="getting-started-card">
-          <div className="getting-started-icon">🚀</div>
-
-          <div className="getting-started-content">
-            <h3>Ready to build your website?</h3>
-
-            <p>
-              Add your business details, services, contact information, logo and
-              choose a design that suits your business.
-            </p>
-          </div>
-        </section>
-
-        {/* ==================================================
             FOOTER
            ================================================== */}
 
         <footer className="dashboard-footer">
-          <span>Website Builder</span>
+          <div className="footer-brand">
+            <span className="footer-brand-icon">✦</span>
 
-          <span>•</span>
+            <strong>SiteCraft</strong>
+          </div>
 
-          <span>Dashboard</span>
+          <span>Simple websites. Powerful presence.</span>
         </footer>
       </div>
     </div>
