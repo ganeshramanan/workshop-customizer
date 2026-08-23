@@ -4,7 +4,7 @@ import WebsiteRenderer from "./WebsiteRenderer";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
-function PublicWebsite({ websiteId }) {
+function PublicWebsite({ siteSlug }) {
   const [website, setWebsite] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState("home");
@@ -20,16 +20,21 @@ function PublicWebsite({ websiteId }) {
   const [bookingStatus, setBookingStatus] = useState("");
 
   // ==================================================
-  // LOAD PUBLIC WEBSITE
+  // LOAD PUBLIC WEBSITE BY SLUG
   // ==================================================
 
   useEffect(() => {
     const loadWebsite = async () => {
       try {
         setLoading(true);
+        setWebsite(null);
+
+        if (!siteSlug) {
+          throw new Error("Website slug is missing");
+        }
 
         const response = await fetch(
-          `${API_URL}/api/websites/public/${websiteId}`,
+          `${API_URL}/api/websites/public/${encodeURIComponent(siteSlug)}`,
         );
 
         if (!response.ok) {
@@ -49,10 +54,8 @@ function PublicWebsite({ websiteId }) {
       }
     };
 
-    if (websiteId) {
-      loadWebsite();
-    }
-  }, [websiteId]);
+    loadWebsite();
+  }, [siteSlug]);
 
   // ==================================================
   // ACTIVE NAVIGATION
@@ -220,8 +223,14 @@ function PublicWebsite({ websiteId }) {
     event.preventDefault();
 
     // --------------------------------------------------
-    // VALIDATION
+    // WEBSITE ID
     // --------------------------------------------------
+
+    // IMPORTANT:
+    // The public website is accessed using the slug,
+    // but service_requests still uses the internal
+    // numeric website ID.
+    const websiteId = website?.id;
 
     if (!websiteId) {
       setBookingStatus(
@@ -229,6 +238,10 @@ function PublicWebsite({ websiteId }) {
       );
       return;
     }
+
+    // --------------------------------------------------
+    // VALIDATION
+    // --------------------------------------------------
 
     if (!booking.name.trim()) {
       setBookingStatus("Please enter your name.");
@@ -264,7 +277,7 @@ function PublicWebsite({ websiteId }) {
 
         service: booking.service.trim(),
 
-        // Preferred date removed
+        // Preferred date currently not used
         preferredDate: null,
 
         // Optional message
@@ -386,6 +399,7 @@ function PublicWebsite({ websiteId }) {
   // ==================================================
 
   const {
+    id: websiteId,
     businessName: loadedBusinessName = "My Business",
     phone = "",
     about = "",

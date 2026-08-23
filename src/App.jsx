@@ -638,9 +638,9 @@ function App() {
   // ==================================================
 
   if (path.startsWith("/site/")) {
-    const websiteId = path.split("/")[2];
+    const siteSlug = decodeURIComponent(path.split("/")[2] || "");
 
-    return <PublicWebsite websiteId={websiteId} />;
+    return <PublicWebsite siteSlug={siteSlug} />;
   }
 
   // ==================================================

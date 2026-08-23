@@ -31,18 +31,34 @@ const upload = multer({
 
 // ====================================================
 // HELPER
+// CREATE URL-FRIENDLY SLUG
+// ====================================================
+
+const createSlug = (value) => {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .substring(0, 160);
+};
+
+// ====================================================
+// HELPER
 // GET USER'S WEBSITE ID
 // ====================================================
 
 const getUserWebsiteId = async (userId) => {
   const result = await pool.query(
     `
-    SELECT w.id
-    FROM websites w
-    JOIN businesses b
-      ON w.business_id = b.id
-    WHERE b.user_id = $1
-    LIMIT 1
+      SELECT w.id
+      FROM websites w
+      JOIN businesses b
+        ON w.business_id = b.id
+      WHERE b.user_id = $1
+      LIMIT 1
     `,
     [userId],
   );
@@ -55,79 +71,141 @@ const getUserWebsiteId = async (userId) => {
 };
 
 // ====================================================
+// HELPER
+// GET USER'S WEBSITE
+// ====================================================
+
+const getUserWebsite = async (userId) => {
+  const result = await pool.query(
+    `
+      SELECT
+        w.id,
+        w.site_name AS "siteName",
+        w.site_slug AS "siteSlug",
+        b.name AS "businessName",
+        b.phone,
+        b.whatsapp,
+        b.address,
+        w.about,
+        w.logo,
+        w.theme,
+        w.hours,
+        w.hero_title AS "heroTitle",
+        w.hero_subtitle AS "heroSubtitle",
+        w.hero_badge AS "heroBadge"
+      FROM websites w
+      JOIN businesses b
+        ON w.business_id = b.id
+      WHERE b.user_id = $1
+      LIMIT 1
+    `,
+    [userId],
+  );
+
+  if (result.rows.length === 0) {
+    return null;
+  }
+
+  const website = result.rows[0];
+
+  // ------------------------------------------------
+  // SERVICES
+  // ------------------------------------------------
+
+  const servicesResult = await pool.query(
+    `
+      SELECT name
+      FROM services
+      WHERE website_id = $1
+      ORDER BY id
+    `,
+    [website.id],
+  );
+
+  website.services = servicesResult.rows.map((service) => service.name);
+
+  // ------------------------------------------------
+  // GALLERY
+  // ------------------------------------------------
+
+  const galleryResult = await pool.query(
+    `
+      SELECT
+        id,
+        image_url AS "imageUrl",
+        file_name AS "fileName",
+        created_at AS "createdAt"
+      FROM website_gallery
+      WHERE website_id = $1
+      ORDER BY id
+    `,
+    [website.id],
+  );
+
+  website.gallery = galleryResult.rows;
+
+  return website;
+};
+
+// ====================================================
 // GET MY WEBSITE
 // GET /api/websites/my-website
 // ====================================================
 
 router.get("/my-website", authMiddleware, async (req, res) => {
   try {
-    const result = await pool.query(
-      `
-        SELECT
-          w.id,
-          b.name AS "businessName",
-          b.phone,
-          b.whatsapp,
-          b.address,
-          w.about,
-          w.logo,
-          w.theme,
-          w.hours,
-          w.hero_title AS "heroTitle",
-          w.hero_subtitle AS "heroSubtitle",
-          w.hero_badge AS "heroBadge"
-        FROM websites w
-        JOIN businesses b
-          ON w.business_id = b.id
-        WHERE b.user_id = $1
-        LIMIT 1
-        `,
-      [req.user.userId],
-    );
+    let website = await getUserWebsite(req.user.userId);
 
-    if (result.rows.length === 0) {
+    if (!website) {
       return res.status(404).json({
         message: "Website not found",
       });
     }
 
-    const website = result.rows[0];
-
     // ------------------------------------------------
-    // LOAD SERVICES
+    // AUTO-GENERATE SITE NAME + SLUG FOR OLD RECORDS
     // ------------------------------------------------
 
-    const servicesResult = await pool.query(
-      `
-        SELECT name
-        FROM services
-        WHERE website_id = $1
-        ORDER BY id
-        `,
-      [website.id],
-    );
+    if (!website.siteName || !website.siteSlug) {
+      const siteName = website.siteName || website.businessName || "My Website";
 
-    website.services = servicesResult.rows.map((service) => service.name);
+      const siteSlug = createSlug(siteName);
 
-    // ------------------------------------------------
-    // LOAD GALLERY
-    // ------------------------------------------------
+      // Only update if slug is not already present.
+      if (!website.siteSlug) {
+        let finalSlug = siteSlug || `website-${website.id}`;
 
-    const galleryResult = await pool.query(
-      `
-        SELECT
-          id,
-          image_url AS "imageUrl",
-          file_name AS "fileName",
-          created_at AS "createdAt"
-        FROM website_gallery
-        WHERE website_id = $1
-        ORDER BY id
-        `,
-      [website.id],
-    );
+        const existingSlug = await pool.query(
+          `
+            SELECT id
+            FROM websites
+            WHERE site_slug = $1
+              AND id <> $2
+            LIMIT 1
+          `,
+          [finalSlug, website.id],
+        );
 
-    website.gallery = galleryResult.rows;
+        if (existingSlug.rows.length > 0) {
+          finalSlug = `${finalSlug}-${website.id}`;
+        }
+
+        await pool.query(
+          `
+            UPDATE websites
+            SET
+              site_name = $1,
+              site_slug = $2,
+              updated_at = CURRENT_TIMESTAMP
+            WHERE id = $3
+          `,
+          [siteName, finalSlug, website.id],
+        );
+
+        website.siteName = siteName;
+        website.siteSlug = finalSlug;
+      }
+    }
 
     return res.json(website);
   } catch (error) {
@@ -141,7 +219,7 @@ router.get("/my-website", authMiddleware, async (req, res) => {
 });
 
 // ====================================================
-// UPLOAD LOGO TO SUPABASE
+// UPLOAD LOGO
 // POST /api/websites/upload-logo
 // ====================================================
 
@@ -151,26 +229,11 @@ router.post(
   upload.single("logo"),
   async (req, res) => {
     try {
-      // ------------------------------------------------
-      // CHECK FILE
-      // ------------------------------------------------
-
       if (!req.file) {
         return res.status(400).json({
           message: "No logo file uploaded",
         });
       }
-
-      console.log("======================================");
-      console.log("Uploading logo to Supabase...");
-      console.log("Original file:", req.file.originalname);
-      console.log("MIME type:", req.file.mimetype);
-      console.log("File size:", req.file.size);
-      console.log("User ID:", req.user.userId);
-
-      // ------------------------------------------------
-      // GET USER WEBSITE
-      // ------------------------------------------------
 
       const websiteId = await getUserWebsiteId(req.user.userId);
 
@@ -179,12 +242,6 @@ router.post(
           message: "Website not found",
         });
       }
-
-      console.log("Website ID:", websiteId);
-
-      // ------------------------------------------------
-      // DETERMINE FILE EXTENSION
-      // ------------------------------------------------
 
       let extension = "png";
 
@@ -198,10 +255,6 @@ router.post(
         extension = "gif";
       }
 
-      // ------------------------------------------------
-      // CREATE FILE NAME
-      // ------------------------------------------------
-
       const randomPart = Math.random().toString(36).substring(2, 10);
 
       const fileName =
@@ -213,12 +266,6 @@ router.post(
         randomPart +
         "." +
         extension;
-
-      console.log("Supabase file name:", fileName);
-
-      // ------------------------------------------------
-      // UPLOAD TO SUPABASE STORAGE
-      // ------------------------------------------------
 
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from("website-logos")
@@ -236,12 +283,6 @@ router.post(
         });
       }
 
-      console.log("Supabase upload successful:", uploadData);
-
-      // ------------------------------------------------
-      // GET PUBLIC URL
-      // ------------------------------------------------
-
       const { data: publicUrlData } = supabase.storage
         .from("website-logos")
         .getPublicUrl(fileName);
@@ -254,31 +295,23 @@ router.post(
 
       const logoUrl = publicUrlData.publicUrl;
 
-      console.log("Logo public URL:", logoUrl);
-
-      // ------------------------------------------------
-      // SAVE URL IN POSTGRESQL
-      // ------------------------------------------------
-
       await pool.query(
         `
-        UPDATE websites
-        SET
-          logo = $1,
-          updated_at = CURRENT_TIMESTAMP
-        WHERE id = $2
+          UPDATE websites
+          SET
+            logo = $1,
+            updated_at = CURRENT_TIMESTAMP
+          WHERE id = $2
         `,
         [logoUrl, websiteId],
       );
 
-      console.log("Logo URL saved to PostgreSQL.");
-
-      console.log("======================================");
+      console.log("Logo uploaded successfully:", uploadData);
 
       return res.json({
         message: "Logo uploaded successfully",
         logo: logoUrl,
-        websiteId: websiteId,
+        websiteId,
       });
     } catch (error) {
       console.error("Logo upload error:", error);
@@ -300,14 +333,14 @@ router.delete("/logo", authMiddleware, async (req, res) => {
   try {
     const result = await pool.query(
       `
-        SELECT
-          w.id,
-          w.logo
-        FROM websites w
-        JOIN businesses b
-          ON w.business_id = b.id
-        WHERE b.user_id = $1
-        LIMIT 1
+          SELECT
+            w.id,
+            w.logo
+          FROM websites w
+          JOIN businesses b
+            ON w.business_id = b.id
+          WHERE b.user_id = $1
+          LIMIT 1
         `,
       [req.user.userId],
     );
@@ -319,10 +352,6 @@ router.delete("/logo", authMiddleware, async (req, res) => {
     }
 
     const website = result.rows[0];
-
-    // ------------------------------------------------
-    // DELETE FILE FROM SUPABASE
-    // ------------------------------------------------
 
     if (website.logo) {
       try {
@@ -337,8 +366,6 @@ router.delete("/logo", authMiddleware, async (req, res) => {
             logoUrl.pathname.substring(markerIndex + marker.length),
           );
 
-          console.log("Deleting Supabase file:", fileName);
-
           const { error: deleteError } = await supabase.storage
             .from("website-logos")
             .remove([fileName]);
@@ -352,17 +379,13 @@ router.delete("/logo", authMiddleware, async (req, res) => {
       }
     }
 
-    // ------------------------------------------------
-    // REMOVE URL FROM DATABASE
-    // ------------------------------------------------
-
     await pool.query(
       `
-        UPDATE websites
-        SET
-          logo = NULL,
-          updated_at = CURRENT_TIMESTAMP
-        WHERE id = $1
+          UPDATE websites
+          SET
+            logo = NULL,
+            updated_at = CURRENT_TIMESTAMP
+          WHERE id = $1
         `,
       [website.id],
     );
@@ -381,7 +404,7 @@ router.delete("/logo", authMiddleware, async (req, res) => {
 });
 
 // ====================================================
-// UPLOAD GALLERY IMAGES
+// UPLOAD GALLERY
 // POST /api/websites/upload-gallery
 // ====================================================
 
@@ -391,27 +414,11 @@ router.post(
   upload.array("gallery", 20),
   async (req, res) => {
     try {
-      // ------------------------------------------------
-      // CHECK FILES
-      // ------------------------------------------------
-
       if (!req.files || req.files.length === 0) {
         return res.status(400).json({
           message: "No gallery images uploaded",
         });
       }
-
-      console.log("======================================");
-
-      console.log("Uploading gallery images...");
-
-      console.log("Number of files:", req.files.length);
-
-      console.log("User ID:", req.user.userId);
-
-      // ------------------------------------------------
-      // GET USER WEBSITE
-      // ------------------------------------------------
 
       const websiteId = await getUserWebsiteId(req.user.userId);
 
@@ -421,19 +428,9 @@ router.post(
         });
       }
 
-      console.log("Website ID:", websiteId);
-
       const uploadedImages = [];
 
-      // ------------------------------------------------
-      // PROCESS EACH IMAGE
-      // ------------------------------------------------
-
       for (const file of req.files) {
-        // ----------------------------------------------
-        // DETERMINE EXTENSION
-        // ----------------------------------------------
-
         let extension = "png";
 
         if (file.mimetype === "image/jpeg") {
@@ -446,10 +443,6 @@ router.post(
           extension = "gif";
         }
 
-        // ----------------------------------------------
-        // CREATE FILE NAME
-        // ----------------------------------------------
-
         const randomPart = Math.random().toString(36).substring(2, 10);
 
         const fileName =
@@ -461,12 +454,6 @@ router.post(
           randomPart +
           "." +
           extension;
-
-        console.log("Uploading:", fileName);
-
-        // ----------------------------------------------
-        // UPLOAD TO SUPABASE
-        // ----------------------------------------------
 
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from("website-gallery")
@@ -484,12 +471,6 @@ router.post(
           });
         }
 
-        console.log("Gallery upload successful:", uploadData);
-
-        // ----------------------------------------------
-        // GET PUBLIC URL
-        // ----------------------------------------------
-
         const { data: publicUrlData } = supabase.storage
           .from("website-gallery")
           .getPublicUrl(fileName);
@@ -502,25 +483,19 @@ router.post(
 
         const imageUrl = publicUrlData.publicUrl;
 
-        console.log("Gallery image URL:", imageUrl);
-
-        // ----------------------------------------------
-        // SAVE IN POSTGRESQL
-        // ----------------------------------------------
-
         const galleryResult = await pool.query(
           `
-            INSERT INTO website_gallery (
-              website_id,
-              image_url,
-              file_name
-            )
-            VALUES ($1, $2, $3)
-            RETURNING
-              id,
-              image_url AS "imageUrl",
-              file_name AS "fileName",
-              created_at AS "createdAt"
+              INSERT INTO website_gallery (
+                website_id,
+                image_url,
+                file_name
+              )
+              VALUES ($1, $2, $3)
+              RETURNING
+                id,
+                image_url AS "imageUrl",
+                file_name AS "fileName",
+                created_at AS "createdAt"
             `,
           [websiteId, imageUrl, fileName],
         );
@@ -528,14 +503,10 @@ router.post(
         uploadedImages.push(galleryResult.rows[0]);
       }
 
-      console.log("Gallery upload completed.");
-
-      console.log("======================================");
-
       return res.status(201).json({
         message: "Gallery images uploaded successfully",
         images: uploadedImages,
-        websiteId: websiteId,
+        websiteId,
       });
     } catch (error) {
       console.error("Gallery upload error:", error);
@@ -557,24 +528,20 @@ router.delete("/gallery/:id", authMiddleware, async (req, res) => {
   try {
     const galleryId = req.params.id;
 
-    // ------------------------------------------------
-    // FIND IMAGE + VERIFY OWNERSHIP
-    // ------------------------------------------------
-
     const result = await pool.query(
       `
-        SELECT
-          wg.id,
-          wg.website_id,
-          wg.image_url,
-          wg.file_name
-        FROM website_gallery wg
-        JOIN websites w
-          ON wg.website_id = w.id
-        JOIN businesses b
-          ON w.business_id = b.id
-        WHERE wg.id = $1
-          AND b.user_id = $2
+          SELECT
+            wg.id,
+            wg.website_id,
+            wg.image_url,
+            wg.file_name
+          FROM website_gallery wg
+          JOIN websites w
+            ON wg.website_id = w.id
+          JOIN businesses b
+            ON w.business_id = b.id
+          WHERE wg.id = $1
+            AND b.user_id = $2
         `,
       [galleryId, req.user.userId],
     );
@@ -587,10 +554,6 @@ router.delete("/gallery/:id", authMiddleware, async (req, res) => {
 
     const image = result.rows[0];
 
-    // ------------------------------------------------
-    // DELETE FROM SUPABASE
-    // ------------------------------------------------
-
     if (image.file_name) {
       const { error: deleteError } = await supabase.storage
         .from("website-gallery")
@@ -601,14 +564,10 @@ router.delete("/gallery/:id", authMiddleware, async (req, res) => {
       }
     }
 
-    // ------------------------------------------------
-    // DELETE FROM DATABASE
-    // ------------------------------------------------
-
     await pool.query(
       `
-        DELETE FROM website_gallery
-        WHERE id = $1
+          DELETE FROM website_gallery
+          WHERE id = $1
         `,
       [galleryId],
     );
@@ -627,35 +586,38 @@ router.delete("/gallery/:id", authMiddleware, async (req, res) => {
 });
 
 // ====================================================
-// GET PUBLIC WEBSITE
-// GET /api/websites/public/:id
+// GET PUBLIC WEBSITE BY SLUG
+// GET /api/websites/public/:slug
 // ====================================================
 
-router.get("/public/:id", async (req, res) => {
+router.get("/public/:slug", async (req, res) => {
   try {
-    const { id } = req.params;
+    const { slug } = req.params;
 
     const websiteResult = await pool.query(
       `
-          SELECT
-            w.id,
-            b.name AS "businessName",
-            b.phone,
-            b.whatsapp,
-            b.address,
-            w.about,
-            w.logo,
-            w.theme,
-            w.hours,
-            w.hero_title AS "heroTitle",
-            w.hero_subtitle AS "heroSubtitle",
-            w.hero_badge AS "heroBadge"
-          FROM websites w
-          JOIN businesses b
-            ON w.business_id = b.id
-          WHERE w.id = $1
+            SELECT
+              w.id,
+              w.site_name AS "siteName",
+              w.site_slug AS "siteSlug",
+              b.name AS "businessName",
+              b.phone,
+              b.whatsapp,
+              b.address,
+              w.about,
+              w.logo,
+              w.theme,
+              w.hours,
+              w.hero_title AS "heroTitle",
+              w.hero_subtitle AS "heroSubtitle",
+              w.hero_badge AS "heroBadge"
+            FROM websites w
+            JOIN businesses b
+              ON w.business_id = b.id
+            WHERE w.site_slug = $1
+            LIMIT 1
           `,
-      [id],
+      [slug],
     );
 
     if (websiteResult.rows.length === 0) {
@@ -672,12 +634,12 @@ router.get("/public/:id", async (req, res) => {
 
     const servicesResult = await pool.query(
       `
-          SELECT name
-          FROM services
-          WHERE website_id = $1
-          ORDER BY id
+            SELECT name
+            FROM services
+            WHERE website_id = $1
+            ORDER BY id
           `,
-      [id],
+      [website.id],
     );
 
     website.services = servicesResult.rows.map((service) => service.name);
@@ -688,14 +650,98 @@ router.get("/public/:id", async (req, res) => {
 
     const galleryResult = await pool.query(
       `
-          SELECT
-            id,
-            image_url AS "imageUrl",
-            file_name AS "fileName",
-            created_at AS "createdAt"
-          FROM website_gallery
-          WHERE website_id = $1
-          ORDER BY id
+            SELECT
+              id,
+              image_url AS "imageUrl",
+              file_name AS "fileName",
+              created_at AS "createdAt"
+            FROM website_gallery
+            WHERE website_id = $1
+            ORDER BY id
+          `,
+      [website.id],
+    );
+
+    website.gallery = galleryResult.rows;
+
+    return res.json(website);
+  } catch (error) {
+    console.error("Public website error:", error);
+
+    return res.status(500).json({
+      message: "Failed to load public website",
+      error: error.message,
+    });
+  }
+});
+
+// ====================================================
+// LEGACY PUBLIC WEBSITE BY NUMERIC ID
+// GET /api/websites/public-id/:id
+//
+// Kept temporarily so existing links don't break.
+// ====================================================
+
+router.get("/public-id/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const websiteResult = await pool.query(
+      `
+            SELECT
+              w.id,
+              w.site_name AS "siteName",
+              w.site_slug AS "siteSlug",
+              b.name AS "businessName",
+              b.phone,
+              b.whatsapp,
+              b.address,
+              w.about,
+              w.logo,
+              w.theme,
+              w.hours,
+              w.hero_title AS "heroTitle",
+              w.hero_subtitle AS "heroSubtitle",
+              w.hero_badge AS "heroBadge"
+            FROM websites w
+            JOIN businesses b
+              ON w.business_id = b.id
+            WHERE w.id = $1
+            LIMIT 1
+          `,
+      [id],
+    );
+
+    if (websiteResult.rows.length === 0) {
+      return res.status(404).json({
+        message: "Website not found",
+      });
+    }
+
+    const website = websiteResult.rows[0];
+
+    const servicesResult = await pool.query(
+      `
+            SELECT name
+            FROM services
+            WHERE website_id = $1
+            ORDER BY id
+          `,
+      [id],
+    );
+
+    website.services = servicesResult.rows.map((service) => service.name);
+
+    const galleryResult = await pool.query(
+      `
+            SELECT
+              id,
+              image_url AS "imageUrl",
+              file_name AS "fileName",
+              created_at AS "createdAt"
+            FROM website_gallery
+            WHERE website_id = $1
+            ORDER BY id
           `,
       [id],
     );
@@ -704,7 +750,7 @@ router.get("/public/:id", async (req, res) => {
 
     return res.json(website);
   } catch (error) {
-    console.error("Public website error:", error);
+    console.error("Legacy public website error:", error);
 
     return res.status(500).json({
       message: "Failed to load public website",
@@ -724,24 +770,26 @@ router.get("/:id", authMiddleware, async (req, res) => {
 
     const websiteResult = await pool.query(
       `
-          SELECT
-            w.id,
-            b.name AS "businessName",
-            b.phone,
-            b.whatsapp,
-            b.address,
-            w.about,
-            w.logo,
-            w.theme,
-            w.hours,
-            w.hero_title AS "heroTitle",
-            w.hero_subtitle AS "heroSubtitle",
-            w.hero_badge AS "heroBadge"
-          FROM websites w
-          JOIN businesses b
-            ON w.business_id = b.id
-          WHERE w.id = $1
-            AND b.user_id = $2
+            SELECT
+              w.id,
+              w.site_name AS "siteName",
+              w.site_slug AS "siteSlug",
+              b.name AS "businessName",
+              b.phone,
+              b.whatsapp,
+              b.address,
+              w.about,
+              w.logo,
+              w.theme,
+              w.hours,
+              w.hero_title AS "heroTitle",
+              w.hero_subtitle AS "heroSubtitle",
+              w.hero_badge AS "heroBadge"
+            FROM websites w
+            JOIN businesses b
+              ON w.business_id = b.id
+            WHERE w.id = $1
+              AND b.user_id = $2
           `,
       [id, req.user.userId],
     );
@@ -754,36 +802,28 @@ router.get("/:id", authMiddleware, async (req, res) => {
 
     const website = websiteResult.rows[0];
 
-    // ------------------------------------------------
-    // SERVICES
-    // ------------------------------------------------
-
     const servicesResult = await pool.query(
       `
-          SELECT name
-          FROM services
-          WHERE website_id = $1
-          ORDER BY id
+            SELECT name
+            FROM services
+            WHERE website_id = $1
+            ORDER BY id
           `,
       [id],
     );
 
     website.services = servicesResult.rows.map((service) => service.name);
 
-    // ------------------------------------------------
-    // GALLERY
-    // ------------------------------------------------
-
     const galleryResult = await pool.query(
       `
-          SELECT
-            id,
-            image_url AS "imageUrl",
-            file_name AS "fileName",
-            created_at AS "createdAt"
-          FROM website_gallery
-          WHERE website_id = $1
-          ORDER BY id
+            SELECT
+              id,
+              image_url AS "imageUrl",
+              file_name AS "fileName",
+              created_at AS "createdAt"
+            FROM website_gallery
+            WHERE website_id = $1
+            ORDER BY id
           `,
       [id],
     );
@@ -812,6 +852,8 @@ router.put("/my-website", authMiddleware, async (req, res) => {
   try {
     const {
       businessName,
+      siteName,
+      siteSlug,
       phone,
       about,
       theme,
@@ -832,10 +874,10 @@ router.put("/my-website", authMiddleware, async (req, res) => {
 
     const businessResult = await client.query(
       `
-          SELECT id
-          FROM businesses
-          WHERE user_id = $1
-          LIMIT 1
+            SELECT id
+            FROM businesses
+            WHERE user_id = $1
+            LIMIT 1
           `,
       [req.user.userId],
     );
@@ -856,10 +898,10 @@ router.put("/my-website", authMiddleware, async (req, res) => {
 
     const websiteResult = await client.query(
       `
-          SELECT id
-          FROM websites
-          WHERE business_id = $1
-          LIMIT 1
+            SELECT id
+            FROM websites
+            WHERE business_id = $1
+            LIMIT 1
           `,
       [businessId],
     );
@@ -875,41 +917,90 @@ router.put("/my-website", authMiddleware, async (req, res) => {
     const websiteId = websiteResult.rows[0].id;
 
     // ------------------------------------------------
+    // SITE NAME
+    // ------------------------------------------------
+
+    const finalSiteName = String(
+      siteName || businessName || "My Website",
+    ).trim();
+
+    // ------------------------------------------------
+    // SITE SLUG
+    // ------------------------------------------------
+
+    let finalSlug = createSlug(siteSlug || finalSiteName);
+
+    if (!finalSlug) {
+      finalSlug = `website-${websiteId}`;
+    }
+
+    // ------------------------------------------------
+    // CHECK SLUG AVAILABILITY
+    // ------------------------------------------------
+
+    const existingSlug = await client.query(
+      `
+            SELECT id
+            FROM websites
+            WHERE site_slug = $1
+              AND id <> $2
+            LIMIT 1
+          `,
+      [finalSlug, websiteId],
+    );
+
+    if (existingSlug.rows.length > 0) {
+      finalSlug = `${finalSlug}-${websiteId}`;
+    }
+
+    // ------------------------------------------------
     // UPDATE BUSINESS
     // ------------------------------------------------
 
     await client.query(
       `
-        UPDATE businesses
-        SET
-          name = $1,
-          phone = $2,
-          whatsapp = $3,
-          address = $4
-        WHERE id = $5
+          UPDATE businesses
+          SET
+            name = $1,
+            phone = $2,
+            whatsapp = $3,
+            address = $4
+          WHERE id = $5
         `,
-      [businessName, phone, whatsapp, address, businessId],
+      [businessName || finalSiteName, phone, whatsapp, address, businessId],
     );
 
     // ------------------------------------------------
     // UPDATE WEBSITE
-    // Logo is intentionally NOT updated here.
     // ------------------------------------------------
 
     await client.query(
       `
-        UPDATE websites
-        SET
-          about = $1,
-          theme = $2,
-          hours = $3,
-          hero_title = $4,
-          hero_subtitle = $5,
-          hero_badge = $6,
-          updated_at = CURRENT_TIMESTAMP
-        WHERE id = $7
+          UPDATE websites
+          SET
+            site_name = $1,
+            site_slug = $2,
+            about = $3,
+            theme = $4,
+            hours = $5,
+            hero_title = $6,
+            hero_subtitle = $7,
+            hero_badge = $8,
+            updated_at =
+              CURRENT_TIMESTAMP
+          WHERE id = $9
         `,
-      [about, theme, hours, heroTitle, heroSubtitle, heroBadge, websiteId],
+      [
+        finalSiteName,
+        finalSlug,
+        about,
+        theme,
+        hours,
+        heroTitle,
+        heroSubtitle,
+        heroBadge,
+        websiteId,
+      ],
     );
 
     // ------------------------------------------------
@@ -918,8 +1009,8 @@ router.put("/my-website", authMiddleware, async (req, res) => {
 
     await client.query(
       `
-        DELETE FROM services
-        WHERE website_id = $1
+          DELETE FROM services
+          WHERE website_id = $1
         `,
       [websiteId],
     );
@@ -929,11 +1020,11 @@ router.put("/my-website", authMiddleware, async (req, res) => {
         if (typeof service === "string" && service.trim()) {
           await client.query(
             `
-              INSERT INTO services (
-                website_id,
-                name
-              )
-              VALUES ($1, $2)
+                INSERT INTO services (
+                  website_id,
+                  name
+                )
+                VALUES ($1, $2)
               `,
             [websiteId, service.trim()],
           );
@@ -945,12 +1036,24 @@ router.put("/my-website", authMiddleware, async (req, res) => {
 
     return res.json({
       message: "Website saved successfully",
-      websiteId: websiteId,
+
+      websiteId,
+
+      siteName: finalSiteName,
+
+      siteSlug: finalSlug,
     });
   } catch (error) {
     await client.query("ROLLBACK");
 
     console.error("Save website error:", error);
+
+    if (error.code === "23505") {
+      return res.status(409).json({
+        message:
+          "That website slug is already in use. Please choose another name.",
+      });
+    }
 
     return res.status(500).json({
       message: "Failed to save website",
@@ -974,6 +1077,8 @@ router.put("/:id", authMiddleware, async (req, res) => {
 
     const {
       businessName,
+      siteName,
+      siteSlug,
       phone,
       whatsapp,
       address,
@@ -989,19 +1094,21 @@ router.put("/:id", authMiddleware, async (req, res) => {
     await client.query("BEGIN");
 
     // ------------------------------------------------
-    // VERIFY WEBSITE OWNERSHIP
+    // VERIFY OWNERSHIP
     // ------------------------------------------------
 
     const websiteResult = await client.query(
       `
-          SELECT
-            w.id,
-            w.business_id
-          FROM websites w
-          JOIN businesses b
-            ON w.business_id = b.id
-          WHERE w.id = $1
-            AND b.user_id = $2
+            SELECT
+              w.id,
+              w.business_id,
+              w.site_name,
+              w.site_slug
+            FROM websites w
+            JOIN businesses b
+              ON w.business_id = b.id
+            WHERE w.id = $1
+              AND b.user_id = $2
           `,
       [id, req.user.userId],
     );
@@ -1016,42 +1123,96 @@ router.put("/:id", authMiddleware, async (req, res) => {
 
     const businessId = websiteResult.rows[0].business_id;
 
+    const websiteId = websiteResult.rows[0].id;
+
+    // ------------------------------------------------
+    // SITE NAME
+    // ------------------------------------------------
+
+    const finalSiteName = String(
+      siteName ||
+        businessName ||
+        websiteResult.rows[0].site_name ||
+        "My Website",
+    ).trim();
+
+    // ------------------------------------------------
+    // SITE SLUG
+    // ------------------------------------------------
+
+    let finalSlug = createSlug(siteSlug || finalSiteName);
+
+    if (!finalSlug) {
+      finalSlug = `website-${websiteId}`;
+    }
+
+    // ------------------------------------------------
+    // CHECK SLUG AVAILABILITY
+    // ------------------------------------------------
+
+    const existingSlug = await client.query(
+      `
+            SELECT id
+            FROM websites
+            WHERE site_slug = $1
+              AND id <> $2
+            LIMIT 1
+          `,
+      [finalSlug, websiteId],
+    );
+
+    if (existingSlug.rows.length > 0) {
+      finalSlug = `${finalSlug}-${websiteId}`;
+    }
+
     // ------------------------------------------------
     // UPDATE BUSINESS
     // ------------------------------------------------
 
     await client.query(
       `
-        UPDATE businesses
-        SET
-          name = $1,
-          phone = $2,
-          whatsapp = $3,
-          address = $4
-        WHERE id = $5
+          UPDATE businesses
+          SET
+            name = $1,
+            phone = $2,
+            whatsapp = $3,
+            address = $4
+          WHERE id = $5
         `,
-      [businessName, phone, whatsapp, address, businessId],
+      [businessName || finalSiteName, phone, whatsapp, address, businessId],
     );
 
     // ------------------------------------------------
     // UPDATE WEBSITE
-    // Logo is intentionally NOT updated here.
     // ------------------------------------------------
 
     await client.query(
       `
-        UPDATE websites
-        SET
-          about = $1,
-          theme = $2,
-          hours = $3,
-          hero_title = $4,
-          hero_subtitle = $5,
-          hero_badge = $6,
-          updated_at = CURRENT_TIMESTAMP
-        WHERE id = $7
+          UPDATE websites
+          SET
+            site_name = $1,
+            site_slug = $2,
+            about = $3,
+            theme = $4,
+            hours = $5,
+            hero_title = $6,
+            hero_subtitle = $7,
+            hero_badge = $8,
+            updated_at =
+              CURRENT_TIMESTAMP
+          WHERE id = $9
         `,
-      [about, theme, hours, heroTitle, heroSubtitle, heroBadge, id],
+      [
+        finalSiteName,
+        finalSlug,
+        about,
+        theme,
+        hours,
+        heroTitle,
+        heroSubtitle,
+        heroBadge,
+        websiteId,
+      ],
     );
 
     // ------------------------------------------------
@@ -1060,10 +1221,10 @@ router.put("/:id", authMiddleware, async (req, res) => {
 
     await client.query(
       `
-        DELETE FROM services
-        WHERE website_id = $1
+          DELETE FROM services
+          WHERE website_id = $1
         `,
-      [id],
+      [websiteId],
     );
 
     if (Array.isArray(services)) {
@@ -1071,13 +1232,13 @@ router.put("/:id", authMiddleware, async (req, res) => {
         if (typeof service === "string" && service.trim()) {
           await client.query(
             `
-              INSERT INTO services (
-                website_id,
-                name
-              )
-              VALUES ($1, $2)
+                INSERT INTO services (
+                  website_id,
+                  name
+                )
+                VALUES ($1, $2)
               `,
-            [id, service.trim()],
+            [websiteId, service.trim()],
           );
         }
       }
@@ -1087,12 +1248,24 @@ router.put("/:id", authMiddleware, async (req, res) => {
 
     return res.json({
       message: "Website updated successfully",
-      websiteId: Number(id),
+
+      websiteId: Number(websiteId),
+
+      siteName: finalSiteName,
+
+      siteSlug: finalSlug,
     });
   } catch (error) {
     await client.query("ROLLBACK");
 
     console.error("Update website error:", error);
+
+    if (error.code === "23505") {
+      return res.status(409).json({
+        message:
+          "That website slug is already in use. Please choose another name.",
+      });
+    }
 
     return res.status(500).json({
       message: "Failed to update website",

@@ -255,6 +255,31 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
   };
 
   // ==================================================
+  // PUBLIC WEBSITE URL
+  // ==================================================
+
+  const siteSlug = website?.siteSlug?.trim() || "";
+
+  const publicWebsiteUrl = siteSlug
+    ? `${window.location.origin}/site/${encodeURIComponent(siteSlug)}`
+    : "";
+
+  // ==================================================
+  // OPEN PUBLIC WEBSITE
+  // ==================================================
+
+  const handleOpenWebsite = () => {
+    if (!siteSlug) {
+      alert(
+        "Website link is not available yet. Please save your website first.",
+      );
+      return;
+    }
+
+    window.open(publicWebsiteUrl, "_blank", "noopener,noreferrer");
+  };
+
+  // ==================================================
   // RENDER
   // ==================================================
 
@@ -349,10 +374,40 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
             </div>
           </div>
 
-          <button className="website-edit-button" onClick={onEditWebsite}>
-            Edit website
-            <ArrowRight size={16} />
-          </button>
+          {/* ==================================================
+              WEBSITE ACTIONS
+             ================================================== */}
+
+          <div className="website-hero-actions">
+            {/* EDIT WEBSITE */}
+
+            <button
+              className="website-edit-button"
+              onClick={onEditWebsite}
+              type="button"
+            >
+              <Wrench size={16} />
+              Edit Website
+            </button>
+
+            {/* OPEN WEBSITE */}
+
+            <button
+              className="website-open-button"
+              onClick={handleOpenWebsite}
+              disabled={!siteSlug}
+              type="button"
+              title={
+                siteSlug
+                  ? `Open ${businessName}`
+                  : "Website link will be available after saving"
+              }
+            >
+              <Globe2 size={16} />
+              Open website
+              <ArrowRight size={16} />
+            </button>
+          </div>
         </section>
 
         {/* ==================================================
@@ -442,6 +497,7 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
                     : "filter-button"
                 }
                 onClick={() => setEnquiryFilter(value)}
+                type="button"
               >
                 {label}
                 <span>{count}</span>
@@ -454,6 +510,7 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
           {enquiriesLoading && (
             <div className="dashboard-loading">
               <div className="loading-spinner" />
+
               <span>Loading enquiries...</span>
             </div>
           )}
@@ -560,6 +617,7 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
                                 event.target.value,
                               )
                             }
+                            aria-label="Change enquiry status"
                           >
                             <option value="new">New</option>
 
@@ -576,6 +634,7 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
                         aria-label={
                           isExpanded ? "Collapse enquiry" : "View enquiry"
                         }
+                        type="button"
                       >
                         {isExpanded ? (
                           <ChevronUp size={18} />
@@ -675,6 +734,7 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
                   className="load-more-button"
                   onClick={loadMoreEnquiries}
                   disabled={enquiriesLoadingMore}
+                  type="button"
                 >
                   {enquiriesLoadingMore ? "Loading..." : "Load more enquiries"}
 
