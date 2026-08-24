@@ -1375,7 +1375,16 @@
   /* EXPANDED ENQUIRY */
 
   .expanded-grid {
+    display: grid;
     grid-template-columns: 1fr;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .enquiry-expanded {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px;
   }
 
   /* FOOTER */
