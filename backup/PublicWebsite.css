@@ -1,15 +1,6 @@
-/* =========================================================
-   PUBLIC WEBSITE
-   Semi-cleaned version
-   ========================================================= */
-
 * {
   box-sizing: border-box;
 }
-
-/* =========================================================
-   BASE
-   ========================================================= */
 
 .public-site {
   min-height: 100vh;
@@ -20,6 +11,7 @@
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
+
   color: #172033;
   background: #ffffff;
 }
@@ -29,9 +21,9 @@
   margin: 0 auto;
 }
 
-/* =========================================================
+/* =========================
    LOADING / ERROR
-   ========================================================= */
+========================= */
 
 .public-loading,
 .public-error {
@@ -42,18 +34,14 @@
   background: #f5f7fb;
 }
 
-.public-loading {
-  flex-direction: column;
-}
-
 .loading-spinner {
   width: 42px;
   height: 42px;
-  margin: 0 auto 16px;
   border: 4px solid #ddd;
   border-top-color: #2563eb;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
+  margin: 0 auto 16px;
 }
 
 @keyframes spin {
@@ -62,22 +50,26 @@
   }
 }
 
+.public-loading {
+  flex-direction: column;
+}
+
 .error-card {
+  background: white;
   padding: 40px;
-  background: #ffffff;
   border-radius: 20px;
   text-align: center;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
 }
 
 .error-icon {
-  margin-bottom: 15px;
   font-size: 42px;
+  margin-bottom: 15px;
 }
 
-/* =========================================================
+/* =========================
    HEADER
-   ========================================================= */
+========================= */
 
 .public-header {
   position: sticky;
@@ -100,15 +92,9 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  flex-shrink: 0;
-  padding: 0;
-  border: none;
-  background: transparent;
   color: inherit;
-  font: inherit;
-  text-align: left;
   text-decoration: none;
-  cursor: pointer;
+  flex-shrink: 0;
 }
 
 .public-logo,
@@ -139,8 +125,8 @@
 .public-brand span {
   display: block;
   margin-top: 2px;
-  color: #7a8496;
   font-size: 12px;
+  color: #7a8496;
 }
 
 .header-actions {
@@ -165,12 +151,13 @@
 
 .header-whatsapp {
   background: #20b86a;
-  color: #ffffff;
+  color: white;
 }
 
-/* =========================================================
+/* ====================================================
    PUBLIC NAVIGATION
-   ========================================================= */
+   ALL NAVIGATION BUTTONS ARE IDENTICAL
+==================================================== */
 
 .public-nav {
   display: flex;
@@ -180,22 +167,23 @@
   margin-left: auto;
 }
 
+/* Every button inside navigation gets the SAME styling */
 .public-nav button {
   appearance: none;
   -webkit-appearance: none;
 
-  margin: 0;
-  padding: 10px 15px;
-
   border: 1px solid #e2e8f0;
-  border-radius: 9px;
-
   background: #ffffff;
   color: #374151;
 
   font-family: inherit;
   font-size: 14px;
   font-weight: 600;
+
+  padding: 10px 15px;
+  margin: 0;
+
+  border-radius: 9px;
 
   cursor: pointer;
 
@@ -207,6 +195,8 @@
     box-shadow 0.2s ease;
 }
 
+/* Hover - SAME for every navigation button */
+
 .public-nav button:hover {
   background: #f3f6fb;
   border-color: #cfd8e6;
@@ -215,25 +205,31 @@
   box-shadow: 0 4px 10px rgba(20, 30, 50, 0.06);
 }
 
+/* Active - SAME for every navigation button */
+
 .public-nav button.nav-active {
   background: #eef3ff;
   border-color: #cbdcff;
   color: #2563eb;
 }
 
+/* Click / pressed state */
+
 .public-nav button:active {
   transform: translateY(0);
   box-shadow: none;
 }
+
+/* Keyboard focus */
 
 .public-nav button:focus-visible {
   outline: 2px solid #2563eb;
   outline-offset: 2px;
 }
 
-/* =========================================================
+/* =========================
    HERO
-   ========================================================= */
+========================= */
 
 .hero-section {
   padding: 90px 0;
@@ -266,14 +262,14 @@
 }
 
 .hero-badge span {
+  display: inline-flex;
   width: 18px;
   height: 18px;
-  display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
   background: #2563eb;
-  color: #ffffff;
+  color: white;
   font-size: 11px;
 }
 
@@ -311,13 +307,13 @@
 
 .hero-primary-button {
   background: #2563eb;
-  color: #ffffff;
+  color: white;
   box-shadow: 0 10px 25px rgba(37, 99, 235, 0.22);
 }
 
 .hero-secondary-button {
+  background: white;
   border: 1px solid #dfe5ef;
-  background: #ffffff;
   color: #172033;
 }
 
@@ -333,7 +329,7 @@
 .hero-card {
   padding: 38px;
   border-radius: 26px;
-  color: #ffffff;
+  color: white;
   background: linear-gradient(145deg, #2563eb, #1745a5);
   box-shadow: 0 30px 70px rgba(37, 99, 235, 0.25);
 }
@@ -364,16 +360,16 @@
   display: inline-block;
   margin-top: 20px;
   padding: 12px 18px;
-  border-radius: 9px;
-  background: #ffffff;
+  background: white;
   color: #2563eb;
+  border-radius: 9px;
   text-decoration: none;
   font-weight: 800;
 }
 
-/* =========================================================
+/* =========================
    SECTIONS
-   ========================================================= */
+========================= */
 
 .services-section,
 .about-section {
@@ -406,9 +402,9 @@
   line-height: 1.7;
 }
 
-/* =========================================================
+/* =========================
    SERVICES
-   ========================================================= */
+========================= */
 
 .service-grid {
   display: grid;
@@ -421,7 +417,7 @@
   padding: 28px;
   border: 1px solid #e9edf4;
   border-radius: 18px;
-  background: #ffffff;
+  background: white;
   transition: 0.25s ease;
 }
 
@@ -432,8 +428,8 @@
 
 .service-number {
   position: absolute;
-  top: 18px;
   right: 20px;
+  top: 18px;
   color: #dfe5ef;
   font-size: 30px;
   font-weight: 900;
@@ -464,13 +460,13 @@
 
 .empty-services {
   grid-column: 1 / -1;
-  color: #788397;
   text-align: center;
+  color: #788397;
 }
 
-/* =========================================================
+/* =========================
    ABOUT
-   ========================================================= */
+========================= */
 
 .about-section {
   background: #f7f9fc;
@@ -484,12 +480,12 @@
 }
 
 .about-visual {
-  position: relative;
   min-height: 400px;
+  border-radius: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 28px;
+  position: relative;
   background: linear-gradient(145deg, #e9f0ff, #dce8ff);
 }
 
@@ -503,7 +499,7 @@
   bottom: 35px;
   padding: 18px 22px;
   border-radius: 14px;
-  background: #ffffff;
+  background: white;
   box-shadow: 0 18px 40px rgba(20, 30, 50, 0.12);
 }
 
@@ -524,14 +520,14 @@
 
 .about-content p {
   color: #68758a;
-  font-size: 16px;
   line-height: 1.8;
+  font-size: 16px;
 }
 
 .about-points {
+  margin-top: 28px;
   display: grid;
   gap: 12px;
-  margin-top: 28px;
 }
 
 .about-points div {
@@ -558,14 +554,14 @@
   font-weight: 600;
 }
 
-/* =========================================================
+/* =========================
    CONTACT
-   ========================================================= */
+========================= */
 
 .contact-section {
   padding: 90px 0;
   background: #172033;
-  color: #ffffff;
+  color: white;
 }
 
 .section-heading.light span {
@@ -573,7 +569,7 @@
 }
 
 .section-heading.light h2 {
-  color: #ffffff;
+  color: white;
 }
 
 .section-heading.light p {
@@ -591,11 +587,11 @@
   align-items: center;
   gap: 15px;
   padding: 22px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.07);
-  color: #ffffff;
   text-decoration: none;
+  color: white;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .contact-icon {
@@ -628,9 +624,9 @@
   line-height: 1.4;
 }
 
-/* =========================================================
+/* =========================
    FOOTER
-   ========================================================= */
+========================= */
 
 .public-footer {
   padding: 30px 0 90px;
@@ -645,7 +641,7 @@
 }
 
 .footer-inner strong {
-  color: #ffffff;
+  color: white;
 }
 
 .footer-inner p {
@@ -653,17 +649,17 @@
   font-size: 12px;
 }
 
-/* =========================================================
-   MOBILE CONTACT BAR
-   ========================================================= */
+/* =========================
+   MOBILE BAR
+========================= */
 
 .mobile-contact-bar {
   display: none;
 }
 
-/* =========================================================
+/* =========================
    THEMES
-   ========================================================= */
+========================= */
 
 .public-site.green .hero-text h1 span,
 .public-site.green .section-heading span,
@@ -716,31 +712,31 @@
 }
 
 .public-site.dark .service-card h3 {
-  color: #ffffff;
+  color: white;
 }
 
 .public-site.dark .about-section {
   background: #182131;
 }
 
-/* =========================================================
+/* ====================================================
    SERVICE REQUEST
-   ========================================================= */
+==================================================== */
 
 .service-request-section {
   min-height: calc(100vh - 90px);
+  padding: 70px 20px;
   display: flex;
   align-items: flex-start;
-  padding: 70px 20px;
 }
 
 .service-request-card {
-  width: 100%;
   max-width: 850px;
+  width: 100%;
   margin: 40px auto 0;
   padding: 40px;
   border-radius: 20px;
-  background: #ffffff;
+  background: white;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
 }
 
@@ -772,16 +768,16 @@
   padding: 13px 15px;
   border: 1px solid #d7d7d7;
   border-radius: 10px;
-  background: #ffffff;
-  font-family: inherit;
   font-size: 15px;
+  font-family: inherit;
+  background: #fff;
 }
 
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #555555;
+  border-color: #555;
 }
 
 .form-group textarea {
@@ -794,14 +790,14 @@
 }
 
 .service-request-button {
-  padding: 14px 28px;
   border: none;
   border-radius: 10px;
-  background: #2563eb;
-  color: #ffffff;
+  padding: 14px 28px;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
+  background: #2563eb;
+  color: white;
 }
 
 .service-request-button:hover {
@@ -817,44 +813,28 @@
   margin-top: 25px;
   padding: 15px;
   border-radius: 10px;
+  text-align: center;
   background: #e9f8ee;
   color: #176b35;
-  text-align: center;
 }
 
 .form-error {
   margin-top: 25px;
   padding: 15px;
   border-radius: 10px;
+  text-align: center;
   background: #fff0f0;
   color: #a32626;
-  text-align: center;
 }
 
-/* =========================================================
-   SMOOTH PAGE SCROLLING
-   ========================================================= */
-
-html {
-  scroll-behavior: smooth;
-}
-
-#home,
-#services,
-#book,
-#about,
-#contact {
-  scroll-margin-top: 90px;
-}
-
-/* =========================================================
+/* =========================
    RESPONSIVE
-   ========================================================= */
+========================= */
 
 @media (max-width: 900px) {
   .header-inner {
-    height: auto;
     flex-wrap: wrap;
+    height: auto;
     padding: 12px 0;
   }
 
@@ -903,8 +883,8 @@ html {
 
   .public-nav button {
     flex-shrink: 0;
-    padding: 8px 11px;
     font-size: 13px;
+    padding: 8px 11px;
   }
 
   .hero-section {
@@ -977,13 +957,10 @@ html {
     right: 0;
     bottom: 0;
     z-index: 200;
-
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 8px;
-
     padding: 8px;
-
+    gap: 8px;
     background: rgba(255, 255, 255, 0.96);
     backdrop-filter: blur(12px);
     border-top: 1px solid #e5e7eb;
@@ -1000,12 +977,12 @@ html {
 
   .mobile-call {
     background: #2563eb;
-    color: #ffffff;
+    color: white;
   }
 
   .mobile-wa {
     background: #20b86a;
-    color: #ffffff;
+    color: white;
   }
 
   .service-request-section {
@@ -1013,8 +990,8 @@ html {
   }
 
   .service-request-card {
-    margin-top: 30px;
     padding: 25px 20px;
+    margin-top: 30px;
   }
 
   .form-grid {
@@ -1029,4 +1006,33 @@ html {
   .service-request-button {
     width: 100%;
   }
+}
+/* ==========================================
+   SMOOTH PAGE SCROLLING
+========================================== */
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Prevent sections from hiding underneath
+   the fixed/sticky header when scrolling */
+#home,
+#services,
+#book,
+#about,
+#contact {
+  scroll-margin-top: 90px;
+}
+
+/* Keep the brand looking like a normal
+   clickable website brand */
+.public-brand {
+  border: none;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
 }
