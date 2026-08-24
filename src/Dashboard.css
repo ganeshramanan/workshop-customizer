@@ -1,7 +1,6 @@
-Latest dashboard.css
 /* =========================================================
    SITECRAFT DASHBOARD
-   Final CSS matched to the supplied dashboard HTML
+   Final CSS
    ========================================================= */
 
 * {
@@ -136,10 +135,6 @@ Latest dashboard.css
   cursor: pointer;
   font-size: 12px;
   font-weight: 600;
-  transition:
-    background 0.15s ease,
-    border-color 0.15s ease,
-    color 0.15s ease;
 }
 
 .logout-button:hover {
@@ -290,11 +285,6 @@ Latest dashboard.css
   font-size: 11px;
   font-weight: 650;
   white-space: nowrap;
-  transition:
-    background 0.15s ease,
-    border-color 0.15s ease,
-    color 0.15s ease,
-    opacity 0.15s ease;
 }
 
 .website-edit-button {
@@ -398,7 +388,6 @@ Latest dashboard.css
 
 /* =========================================================
    ANALYTICS CARDS
-   Keep all four cards exactly equal in size.
    ========================================================= */
 
 .analytics-grid {
@@ -420,15 +409,7 @@ Latest dashboard.css
 }
 
 .analytics-card::after {
-  content: "";
-  position: absolute;
-  width: 58px;
-  height: 58px;
-  right: -25px;
-  bottom: -25px;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.022);
-  pointer-events: none;
+  display: none;
 }
 
 .analytics-card-top {
@@ -509,12 +490,6 @@ Latest dashboard.css
 
 /* =========================================================
    ENQUIRY STATISTICS
-   Kept intact for HTML compatibility.
-   
-   NOTE:
-   The actual customer activity information is already shown
-   again inside the enquiry filter bar. These cards are therefore
-   visually minimized rather than changing the working HTML.
    ========================================================= */
 
 .stats-grid {
@@ -589,7 +564,6 @@ Latest dashboard.css
 
 /* =========================================================
    CUSTOMER ACTIVITY
-   DO NOT CHANGE — stable working section
    ========================================================= */
 
 .enquiries-section {
@@ -621,7 +595,6 @@ Latest dashboard.css
 
 /* =========================================================
    FILTERS
-   DO NOT CHANGE — stable working section
    ========================================================= */
 
 .enquiry-filter-bar {
@@ -644,9 +617,6 @@ Latest dashboard.css
   cursor: pointer;
   font-size: 11px;
   font-weight: 600;
-  transition:
-    background 0.15s ease,
-    color 0.15s ease;
 }
 
 .filter-button span {
@@ -678,7 +648,6 @@ Latest dashboard.css
 
 /* =========================================================
    ENQUIRY TABLE
-   DO NOT CHANGE — scrolling and table structure preserved
    ========================================================= */
 
 .enquiry-table {
@@ -881,10 +850,6 @@ Latest dashboard.css
   background: #ffffff;
   color: #717b8c;
   cursor: pointer;
-  transition:
-    background 0.15s ease,
-    color 0.15s ease,
-    border-color 0.15s ease;
 }
 
 .expand-button:hover {
@@ -1075,7 +1040,6 @@ Latest dashboard.css
 
 /* =========================================================
    LOAD MORE
-   Stable scrolling/load-more behavior preserved
    ========================================================= */
 
 .load-more-container {
@@ -1149,12 +1113,14 @@ Latest dashboard.css
 
 /* =========================================================
    TABLET
+   601px - 1100px
    ========================================================= */
 
 @media (max-width: 1100px) {
   .analytics-grid,
   .stats-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
   }
 
   .expanded-grid {
@@ -1173,6 +1139,7 @@ Latest dashboard.css
 
 /* =========================================================
    SMALL LAPTOP / TABLET
+   601px - 850px
    ========================================================= */
 
 @media (max-width: 850px) {
@@ -1205,15 +1172,20 @@ Latest dashboard.css
 
 /* =========================================================
    MOBILE
+   600px and below
    ========================================================= */
 
 @media (max-width: 600px) {
   .dashboard-container {
     width: calc(100% - 16px);
     max-width: 520px;
+    margin: 0 auto;
   }
 
+  /* TOP BAR */
+
   .dashboard-topbar {
+    min-height: 56px;
     gap: 8px;
   }
 
@@ -1230,6 +1202,8 @@ Latest dashboard.css
     padding: 0;
   }
 
+  /* WELCOME */
+
   .welcome-section {
     padding: 22px 0 16px;
   }
@@ -1242,17 +1216,24 @@ Latest dashboard.css
     font-size: 12px;
   }
 
+  /* WEBSITE HERO */
+
   .website-hero {
     padding: 15px;
   }
 
   .website-hero-main {
     align-items: flex-start;
+    width: 100%;
   }
 
   .website-logo {
     width: 40px;
     height: 40px;
+  }
+
+  .website-hero-content {
+    min-width: 0;
   }
 
   .website-hero-content h2 {
@@ -1264,6 +1245,7 @@ Latest dashboard.css
   }
 
   .website-hero-actions {
+    width: 100%;
     flex-direction: column;
   }
 
@@ -1272,31 +1254,61 @@ Latest dashboard.css
     width: 100%;
   }
 
+  /* SECTION HEADERS */
+
+  .analytics-section-header,
+  .enquiries-section-header {
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    flex-direction: column;
+    text-align: left;
+    margin-bottom: 12px;
+  }
+
+  .analytics-section-header h2,
+  .enquiries-section-header h2 {
+    width: 100%;
+    margin: 0;
+    text-align: left;
+  }
+
+  .analytics-section-header p,
+  .enquiries-section-header p {
+    width: 100%;
+    margin: 4px 0 0;
+    text-align: left;
+  }
+
   .analytics-section,
   .enquiries-section {
     margin-top: 20px;
   }
 
-  .analytics-section-header,
-  .enquiries-section-header {
-    align-items: flex-start;
-    flex-direction: column;
-    margin-bottom: 10px;
-  }
+  /* ANALYTICS
+     
+     MOBILE:
+     
+     [ CARD 1 ] [ CARD 2 ]
+     [ CARD 3 ] [ CARD 4 ]
+  */
 
-  .analytics-grid,
-  .stats-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
+  .analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    width: 100%;
   }
 
   .analytics-card {
-    height: 108px;
-    padding: 11px;
+    width: 100%;
+    min-width: 0;
+    height: 104px;
+    padding: 12px;
   }
 
-  .analytics-icon,
-  .stat-icon {
+  .analytics-icon {
     width: 29px;
     height: 29px;
   }
@@ -1307,27 +1319,51 @@ Latest dashboard.css
   }
 
   .analytics-label {
+    margin-top: 3px;
     font-size: 11px;
   }
 
   .analytics-card p {
+    margin-top: 2px;
     font-size: 9px;
+    line-height: 1.25;
+  }
+
+  /* ENQUIRY STATISTICS
+     
+     MOBILE:
+     
+     [ STAT 1 ] [ STAT 2 ]
+     [ STAT 3 ] [ STAT 4 ]
+  */
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    width: 100%;
   }
 
   .stat-card {
+    width: 100%;
+    min-width: 0;
     height: 58px;
     padding: 8px 9px;
+  }
+
+  .stat-icon {
+    width: 29px;
+    height: 29px;
   }
 
   .stat-card strong {
     font-size: 16px;
   }
 
-  .expanded-grid {
-    grid-template-columns: 1fr;
-  }
+  /* CUSTOMER ACTIVITY */
 
   .enquiry-filter-bar {
+    width: 100%;
     overflow-x: auto;
     padding-bottom: 2px;
   }
@@ -1335,6 +1371,14 @@ Latest dashboard.css
   .filter-button {
     flex-shrink: 0;
   }
+
+  /* EXPANDED ENQUIRY */
+
+  .expanded-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* FOOTER */
 
   .dashboard-footer {
     flex-wrap: wrap;
@@ -1344,6 +1388,7 @@ Latest dashboard.css
 
 /* =========================================================
    VERY SMALL MOBILE
+   380px and below
    ========================================================= */
 
 @media (max-width: 380px) {
@@ -1351,16 +1396,30 @@ Latest dashboard.css
     width: calc(100% - 12px);
   }
 
-  .analytics-grid,
-  .stats-grid {
-    grid-template-columns: 1fr;
+  .analytics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
   }
 
   .analytics-card {
     height: 100px;
+    padding: 10px;
+  }
+
+  .analytics-value {
+    font-size: 19px;
+  }
+
+  .analytics-label {
+    font-size: 10px;
+  }
+
+  .analytics-card p {
+    font-size: 8px;
   }
 
   .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 7px;
   }
 
