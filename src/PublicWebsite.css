@@ -897,8 +897,18 @@ html {
   }
 
   .public-nav {
+    width: 100%;
+    margin-left: 0;
+    justify-content: flex-start;
     gap: 5px;
     overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .public-nav::-webkit-scrollbar {
+    display: none;
   }
 
   .public-nav button {
