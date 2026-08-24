@@ -1,13 +1,18 @@
 import { useEffect, useState } from "react";
+
 import {
   ArrowRight,
   CheckCircle2,
   ChevronDown,
   ChevronUp,
   Clock3,
+  Eye,
   Globe2,
   LayoutDashboard,
   LogOut,
+  Mail,
+  MapPin,
+  MessageCircle,
   MessageSquare,
   Phone,
   UserRound,
@@ -15,7 +20,7 @@ import {
   Wrench,
   Car,
   CalendarDays,
-  Mail,
+  RefreshCw,
 } from "lucide-react";
 
 import "./Dashboard.css";
@@ -30,8 +35,11 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
   // ==================================================
 
   const [enquiries, setEnquiries] = useState([]);
+
   const [enquiriesLoading, setEnquiriesLoading] = useState(true);
+
   const [enquiriesLoadingMore, setEnquiriesLoadingMore] = useState(false);
+
   const [enquiriesError, setEnquiriesError] = useState("");
 
   const [enquiryFilter, setEnquiryFilter] = useState("all");
@@ -48,6 +56,81 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
   const [hasMoreEnquiries, setHasMoreEnquiries] = useState(false);
 
   const ENQUIRIES_PER_PAGE = 10;
+
+  // ==================================================
+  // ANALYTICS STATE
+  // ==================================================
+
+  const [analytics, setAnalytics] = useState({
+    pageViews: 0,
+    directions: 0,
+    whatsappClicks: 0,
+    phoneClicks: 0,
+  });
+
+  const [analyticsLoading, setAnalyticsLoading] = useState(true);
+
+  const [analyticsError, setAnalyticsError] = useState("");
+
+  // ==================================================
+  // LOAD ANALYTICS
+  // ==================================================
+
+  const loadAnalytics = async () => {
+    const websiteId = website?.id;
+
+    if (!websiteId) {
+      setAnalyticsLoading(false);
+      return;
+    }
+
+    try {
+      setAnalyticsLoading(true);
+      setAnalyticsError("");
+
+      const response = await fetch(
+        `${API_URL}/api/analytics/summary/${websiteId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Failed to load analytics");
+      }
+
+      console.log("Website analytics:", result);
+
+      setAnalytics({
+        pageViews: Number(
+          result.pageViews ?? result.page_views ?? result.totalPageViews ?? 0,
+        ),
+
+        directions: Number(
+          result.directions ??
+            result.directionClicks ??
+            result.direction_clicks ??
+            0,
+        ),
+
+        whatsappClicks: Number(
+          result.whatsappClicks ?? result.whatsapp_clicks ?? 0,
+        ),
+
+        phoneClicks: Number(result.phoneClicks ?? result.phone_clicks ?? 0),
+      });
+    } catch (error) {
+      console.error("Load analytics error:", error);
+
+      setAnalyticsError(error.message || "Unable to load analytics");
+    } finally {
+      setAnalyticsLoading(false);
+    }
+  };
 
   // ==================================================
   // LOAD ENQUIRIES
@@ -135,6 +218,19 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
   }, [token, enquiryFilter]);
 
   // ==================================================
+  // LOAD ANALYTICS
+  // ==================================================
+
+  useEffect(() => {
+    if (!token || !website?.id) {
+      setAnalyticsLoading(false);
+      return;
+    }
+
+    loadAnalytics();
+  }, [token, website?.id]);
+
+  // ==================================================
   // LOAD MORE
   // ==================================================
 
@@ -160,10 +256,12 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
         `${API_URL}/api/service-requests/${enquiryId}/status`,
         {
           method: "PATCH",
+
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
+
           body: JSON.stringify({
             status: newStatus,
           }),
@@ -273,11 +371,54 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
       alert(
         "Website link is not available yet. Please save your website first.",
       );
+
       return;
     }
 
     window.open(publicWebsiteUrl, "_blank", "noopener,noreferrer");
   };
+
+  // ==================================================
+  // ANALYTICS CARDS
+  // ==================================================
+
+  const analyticsCards = [
+    {
+      key: "pageViews",
+      label: "Page Views",
+      value: analytics.pageViews,
+      description: "Visitors who viewed your website",
+      icon: Eye,
+      className: "analytics-pageviews",
+    },
+
+    {
+      key: "directions",
+      label: "Directions",
+      value: analytics.directions,
+      description: "Visitors who opened your location",
+      icon: MapPin,
+      className: "analytics-directions",
+    },
+
+    {
+      key: "whatsappClicks",
+      label: "WhatsApp",
+      value: analytics.whatsappClicks,
+      description: "WhatsApp contact clicks",
+      icon: MessageCircle,
+      className: "analytics-whatsapp",
+    },
+
+    {
+      key: "phoneClicks",
+      label: "Phone Calls",
+      value: analytics.phoneClicks,
+      description: "Phone contact clicks",
+      icon: Phone,
+      className: "analytics-phone",
+    },
+  ];
 
   // ==================================================
   // RENDER
@@ -288,7 +429,7 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
       <div className="dashboard-container">
         {/* ==================================================
             TOP NAVIGATION
-           ================================================== */}
+        ================================================== */}
 
         <header className="dashboard-topbar">
           <div className="brand-area">
@@ -318,6 +459,7 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
 
             <button className="logout-button" onClick={onLogout} title="Logout">
               <LogOut size={17} />
+
               <span>Logout</span>
             </button>
           </div>
@@ -325,7 +467,7 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
 
         {/* ==================================================
             WELCOME
-           ================================================== */}
+        ================================================== */}
 
         <section className="welcome-section">
           <div>
@@ -333,13 +475,13 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
 
             <h1>Welcome back, {user?.name || "there"}</h1>
 
-            <p>Manage your website and stay on top of customer enquiries.</p>
+            <p>Manage your website and stay on top of customer activity.</p>
           </div>
         </section>
 
         {/* ==================================================
             WEBSITE HERO
-           ================================================== */}
+        ================================================== */}
 
         <section className="website-hero">
           <div className="website-hero-main">
@@ -374,13 +516,7 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
             </div>
           </div>
 
-          {/* ==================================================
-              WEBSITE ACTIONS
-             ================================================== */}
-
           <div className="website-hero-actions">
-            {/* EDIT WEBSITE */}
-
             <button
               className="website-edit-button"
               onClick={onEditWebsite}
@@ -389,8 +525,6 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
               <Wrench size={16} />
               Edit Website
             </button>
-
-            {/* OPEN WEBSITE */}
 
             <button
               className="website-open-button"
@@ -411,8 +545,71 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
         </section>
 
         {/* ==================================================
-            STATISTICS
-           ================================================== */}
+            WEBSITE ANALYTICS
+        ================================================== */}
+
+        <section className="analytics-section">
+          <div className="analytics-section-header">
+            <div>
+              <div className="section-kicker">WEBSITE ANALYTICS</div>
+
+              <h2>Website activity</h2>
+
+              <p>See how visitors are interacting with your website.</p>
+            </div>
+
+            <button
+              type="button"
+              className="analytics-refresh-button"
+              onClick={loadAnalytics}
+              disabled={analyticsLoading}
+              title="Refresh analytics"
+            >
+              <RefreshCw
+                size={16}
+                className={analyticsLoading ? "refresh-spinning" : ""}
+              />
+
+              <span>Refresh</span>
+            </button>
+          </div>
+
+          {analyticsError && (
+            <div className="analytics-error">
+              <MessageSquare size={18} />
+
+              <span>{analyticsError}</span>
+            </div>
+          )}
+
+          <div className="analytics-grid">
+            {analyticsCards.map(
+              ({ key, label, value, description, icon: Icon, className }) => (
+                <div className={`analytics-card ${className}`} key={key}>
+                  <div className="analytics-card-top">
+                    <div className="analytics-icon">
+                      <Icon size={20} />
+                    </div>
+
+                    <span className="analytics-period">All time</span>
+                  </div>
+
+                  <div className="analytics-value">
+                    {analyticsLoading ? "—" : value.toLocaleString("en-IN")}
+                  </div>
+
+                  <div className="analytics-label">{label}</div>
+
+                  <p>{description}</p>
+                </div>
+              ),
+            )}
+          </div>
+        </section>
+
+        {/* ==================================================
+            ENQUIRY STATISTICS
+        ================================================== */}
 
         <section className="stats-grid">
           <div className="stat-card">
@@ -422,6 +619,7 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
 
             <div>
               <span>Total enquiries</span>
+
               <strong>{enquiryCounts.total}</strong>
             </div>
           </div>
@@ -433,6 +631,7 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
 
             <div>
               <span>New</span>
+
               <strong>{enquiryCounts.new}</strong>
             </div>
           </div>
@@ -444,6 +643,7 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
 
             <div>
               <span>Contacted</span>
+
               <strong>{enquiryCounts.contacted}</strong>
             </div>
           </div>
@@ -455,6 +655,7 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
 
             <div>
               <span>Completed</span>
+
               <strong>{enquiryCounts.completed}</strong>
             </div>
           </div>
@@ -462,7 +663,7 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
 
         {/* ==================================================
             ENQUIRIES
-           ================================================== */}
+        ================================================== */}
 
         <section className="enquiries-section">
           <div className="enquiries-section-header">
@@ -476,6 +677,7 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
 
             <div className="enquiries-total">
               <Users size={16} />
+
               <span>{enquiryCounts.total} total</span>
             </div>
           </div>
@@ -500,6 +702,7 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
                 type="button"
               >
                 {label}
+
                 <span>{count}</span>
               </button>
             ))}
@@ -746,7 +949,7 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
 
         {/* ==================================================
             FOOTER
-           ================================================== */}
+        ================================================== */}
 
         <footer className="dashboard-footer">
           <span className="footer-brand">SiteCraft</span>

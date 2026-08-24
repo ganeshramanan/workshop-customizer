@@ -46,6 +46,27 @@ function PublicWebsite({ siteSlug }) {
         console.log("Public website loaded:", data);
 
         setWebsite(data);
+
+        // --------------------------------------------------
+        // RECORD PAGE VIEW
+        // --------------------------------------------------
+
+        try {
+          await fetch(`${API_URL}/api/analytics/event`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              websiteId: data.id,
+              eventType: "page_view",
+            }),
+          });
+
+          console.log("Analytics: page_view recorded");
+        } catch (analyticsError) {
+          console.error("Analytics page view error:", analyticsError);
+        }
       } catch (error) {
         console.error("Public website error:", error);
         setWebsite(null);
@@ -112,6 +133,63 @@ function PublicWebsite({ siteSlug }) {
   };
 
   // ==================================================
+  // ANALYTICS HELPER
+  // ==================================================
+
+  const recordAnalyticsEvent = async (eventType) => {
+    const websiteId = website?.id;
+
+    if (!websiteId) {
+      console.warn("Analytics skipped: website ID is missing");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/api/analytics/event`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          websiteId,
+          eventType,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+
+        console.error(`Analytics ${eventType} failed:`, errorData);
+
+        return;
+      }
+
+      const result = await response.json();
+
+      console.log(`Analytics: ${eventType} recorded`, result);
+    } catch (error) {
+      // Analytics must NEVER break the customer website.
+      console.error(`Analytics ${eventType} error:`, error);
+    }
+  };
+
+  // ==================================================
+  // ANALYTICS CLICK HANDLERS
+  // ==================================================
+
+  const handleWhatsAppClick = () => {
+    recordAnalyticsEvent("whatsapp_click");
+  };
+
+  const handlePhoneClick = () => {
+    recordAnalyticsEvent("phone_click");
+  };
+
+  const handleDirectionClick = () => {
+    recordAnalyticsEvent("direction_click");
+  };
+
+  // ==================================================
   // HELPERS
   // ==================================================
 
@@ -175,8 +253,6 @@ function PublicWebsite({ siteSlug }) {
 
         let finalUrl = imageUrl;
 
-        // If backend returns a relative URL,
-        // add the API URL.
         if (
           !imageUrl.startsWith("http://") &&
           !imageUrl.startsWith("https://") &&
@@ -222,14 +298,6 @@ function PublicWebsite({ siteSlug }) {
   const handleBookingSubmit = async (event) => {
     event.preventDefault();
 
-    // --------------------------------------------------
-    // WEBSITE ID
-    // --------------------------------------------------
-
-    // IMPORTANT:
-    // The public website is accessed using the slug,
-    // but service_requests still uses the internal
-    // numeric website ID.
     const websiteId = website?.id;
 
     if (!websiteId) {
@@ -272,15 +340,12 @@ function PublicWebsite({ siteSlug }) {
 
         phone: booking.phone.trim(),
 
-        // Backend compatibility
         vehicle: null,
 
         service: booking.service.trim(),
 
-        // Preferred date currently not used
         preferredDate: null,
 
-        // Optional message
         message: booking.notes.trim() || null,
       };
 
@@ -327,6 +392,9 @@ function PublicWebsite({ siteSlug }) {
         const whatsappUrl =
           `https://wa.me/${whatsappNumber}` +
           `?text=${encodeURIComponent(message)}`;
+
+        // Record WhatsApp click before opening WhatsApp.
+        await recordAnalyticsEvent("whatsapp_click");
 
         window.open(whatsappUrl, "_blank", "noopener,noreferrer");
 
@@ -462,6 +530,9 @@ function PublicWebsite({ siteSlug }) {
       bookingStatus={bookingStatus}
       handleBookingChange={handleBookingChange}
       handleBookingSubmit={handleBookingSubmit}
+      handleWhatsAppClick={handleWhatsAppClick}
+      handlePhoneClick={handlePhoneClick}
+      handleDirectionClick={handleDirectionClick}
     />
   );
 }

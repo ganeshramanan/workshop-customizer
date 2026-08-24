@@ -19,6 +19,7 @@ const websiteRoutes = require("./routes/websiteRoutes");
 const authRoutes = require("./routes/authRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const serviceRequestRoutes = require("./routes/serviceRequestRoutes");
+const analyticsRoutes = require("./routes/analyticsRoutes");
 
 // ====================================================
 // MIDDLEWARE
@@ -47,6 +48,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 
 app.use("/api/service-requests", serviceRequestRoutes);
+app.use("/api/analytics", analyticsRoutes);
 
 // ====================================================
 // ROOT

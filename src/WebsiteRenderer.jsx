@@ -25,6 +25,11 @@ function WebsiteRenderer({
   bookingStatus,
   handleBookingChange,
   handleBookingSubmit,
+
+  // Analytics handlers
+  handleWhatsAppClick,
+  handlePhoneClick,
+  handleDirectionClick,
 }) {
   // ==================================================
   // SAFE DATA
@@ -47,6 +52,16 @@ function WebsiteRenderer({
   const displayPhone = phoneNumber || phone || "";
 
   const displayWhatsapp = whatsappNumber || whatsapp || "";
+
+  // ==================================================
+  // GOOGLE MAPS URL
+  // ==================================================
+
+  const directionsUrl = address
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+        address,
+      )}`
+    : "";
 
   return (
     <div className={`public-site ${theme || "blue"}`}>
@@ -136,11 +151,23 @@ function WebsiteRenderer({
           </nav>
 
           <div className="header-actions">
+            {/* ==================================================
+                PHONE
+            ================================================== */}
+
             {displayPhone && (
-              <a className="header-call" href={`tel:${displayPhone}`}>
+              <a
+                className="header-call"
+                href={`tel:${displayPhone}`}
+                onClick={handlePhoneClick}
+              >
                 Call
               </a>
             )}
+
+            {/* ==================================================
+                WHATSAPP
+            ================================================== */}
 
             {displayWhatsapp && (
               <a
@@ -148,6 +175,7 @@ function WebsiteRenderer({
                 href={`https://wa.me/${displayWhatsapp}`}
                 target="_blank"
                 rel="noreferrer"
+                onClick={handleWhatsAppClick}
               >
                 WhatsApp
               </a>
@@ -350,7 +378,7 @@ function WebsiteRenderer({
       </section>
 
       {/* ==================================================
-          SIMPLE INQUIRY FORM
+          INQUIRY FORM
       ================================================== */}
 
       <section id="book" className="service-request-section">
@@ -491,21 +519,25 @@ function WebsiteRenderer({
             <div className="about-points">
               <div>
                 <span>✓</span>
+
                 <p>Quality service</p>
               </div>
 
               <div>
                 <span>✓</span>
+
                 <p>Professional approach</p>
               </div>
 
               <div>
                 <span>✓</span>
+
                 <p>Customer-first approach</p>
               </div>
 
               <div>
                 <span>✓</span>
+
                 <p>Easy to get in touch</p>
               </div>
             </div>
@@ -530,14 +562,17 @@ function WebsiteRenderer({
           </div>
 
           <div className="contact-grid">
+            {/* ==================================================
+                DIRECTIONS
+            ================================================== */}
+
             {address && (
               <a
                 className="contact-card"
-                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                  address,
-                )}`}
+                href={directionsUrl}
                 target="_blank"
                 rel="noreferrer"
+                onClick={handleDirectionClick}
               >
                 <div className="contact-icon">📍</div>
 
@@ -549,8 +584,16 @@ function WebsiteRenderer({
               </a>
             )}
 
+            {/* ==================================================
+                PHONE
+            ================================================== */}
+
             {displayPhone && (
-              <a className="contact-card" href={`tel:${displayPhone}`}>
+              <a
+                className="contact-card"
+                href={`tel:${displayPhone}`}
+                onClick={handlePhoneClick}
+              >
                 <div className="contact-icon">📞</div>
 
                 <div>
@@ -560,6 +603,10 @@ function WebsiteRenderer({
                 </div>
               </a>
             )}
+
+            {/* ==================================================
+                OPENING HOURS
+            ================================================== */}
 
             {hours && (
               <div className="contact-card">
@@ -601,7 +648,11 @@ function WebsiteRenderer({
       {(displayPhone || displayWhatsapp) && (
         <div className="mobile-contact-bar">
           {displayPhone && (
-            <a className="mobile-call" href={`tel:${displayPhone}`}>
+            <a
+              className="mobile-call"
+              href={`tel:${displayPhone}`}
+              onClick={handlePhoneClick}
+            >
               📞 Call
             </a>
           )}
@@ -612,6 +663,7 @@ function WebsiteRenderer({
               href={`https://wa.me/${displayWhatsapp}`}
               target="_blank"
               rel="noreferrer"
+              onClick={handleWhatsAppClick}
             >
               💬 WhatsApp
             </a>
