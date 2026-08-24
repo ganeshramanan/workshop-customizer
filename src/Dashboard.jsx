@@ -35,15 +35,10 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
   // ==================================================
 
   const [enquiries, setEnquiries] = useState([]);
-
   const [enquiriesLoading, setEnquiriesLoading] = useState(true);
-
   const [enquiriesLoadingMore, setEnquiriesLoadingMore] = useState(false);
-
   const [enquiriesError, setEnquiriesError] = useState("");
-
   const [enquiryFilter, setEnquiryFilter] = useState("all");
-
   const [expandedEnquiry, setExpandedEnquiry] = useState(null);
 
   const [enquiryCounts, setEnquiryCounts] = useState({
@@ -430,7 +425,6 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
         {/* ==================================================
             TOP NAVIGATION
         ================================================== */}
-
         <header className="dashboard-topbar">
           <div className="brand-area">
             <div className="brand-mark">
@@ -459,16 +453,13 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
 
             <button className="logout-button" onClick={onLogout} title="Logout">
               <LogOut size={17} />
-
               <span>Logout</span>
             </button>
           </div>
         </header>
-
         {/* ==================================================
             WELCOME
         ================================================== */}
-
         <section className="welcome-section">
           <div>
             <div className="section-kicker">DASHBOARD</div>
@@ -478,11 +469,9 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
             <p>Manage your website and stay on top of customer activity.</p>
           </div>
         </section>
-
         {/* ==================================================
             WEBSITE HERO
         ================================================== */}
-
         <section className="website-hero">
           <div className="website-hero-main">
             <div className="website-logo">
@@ -543,11 +532,9 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
             </button>
           </div>
         </section>
-
         {/* ==================================================
             WEBSITE ANALYTICS
         ================================================== */}
-
         <section className="analytics-section">
           <div className="analytics-section-header">
             <div>
@@ -577,7 +564,6 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
           {analyticsError && (
             <div className="analytics-error">
               <MessageSquare size={18} />
-
               <span>{analyticsError}</span>
             </div>
           )}
@@ -608,63 +594,8 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
         </section>
 
         {/* ==================================================
-            ENQUIRY STATISTICS
-        ================================================== */}
-
-        <section className="stats-grid">
-          <div className="stat-card">
-            <div className="stat-icon total">
-              <MessageSquare size={18} />
-            </div>
-
-            <div>
-              <span>Total enquiries</span>
-
-              <strong>{enquiryCounts.total}</strong>
-            </div>
-          </div>
-
-          <div className="stat-card">
-            <div className="stat-icon new">
-              <Clock3 size={18} />
-            </div>
-
-            <div>
-              <span>New</span>
-
-              <strong>{enquiryCounts.new}</strong>
-            </div>
-          </div>
-
-          <div className="stat-card">
-            <div className="stat-icon contacted">
-              <Phone size={18} />
-            </div>
-
-            <div>
-              <span>Contacted</span>
-
-              <strong>{enquiryCounts.contacted}</strong>
-            </div>
-          </div>
-
-          <div className="stat-card">
-            <div className="stat-icon completed">
-              <CheckCircle2 size={18} />
-            </div>
-
-            <div>
-              <span>Completed</span>
-
-              <strong>{enquiryCounts.completed}</strong>
-            </div>
-          </div>
-        </section>
-
-        {/* ==================================================
             ENQUIRIES
         ================================================== */}
-
         <section className="enquiries-section">
           <div className="enquiries-section-header">
             <div>
@@ -677,7 +608,6 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
 
             <div className="enquiries-total">
               <Users size={16} />
-
               <span>{enquiryCounts.total} total</span>
             </div>
           </div>
@@ -702,7 +632,6 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
                 type="button"
               >
                 {label}
-
                 <span>{count}</span>
               </button>
             ))}
@@ -713,7 +642,6 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
           {enquiriesLoading && (
             <div className="dashboard-loading">
               <div className="loading-spinner" />
-
               <span>Loading enquiries...</span>
             </div>
           )}
@@ -946,11 +874,9 @@ function Dashboard({ user, website, token, onEditWebsite, onLogout }) {
               </div>
             )}
         </section>
-
         {/* ==================================================
             FOOTER
         ================================================== */}
-
         <footer className="dashboard-footer">
           <span className="footer-brand">SiteCraft</span>
 

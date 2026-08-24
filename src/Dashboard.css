@@ -1,17 +1,37 @@
+Latest dashboard.css
 /* =========================================================
    SITECRAFT DASHBOARD
+   Final CSS matched to the supplied dashboard HTML
    ========================================================= */
+
+* {
+  box-sizing: border-box;
+}
 
 .dashboard {
   min-height: 100vh;
   background: #f6f7f9;
   color: #172033;
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+}
+
+.dashboard button,
+.dashboard select {
+  font: inherit;
 }
 
 .dashboard-container {
   width: min(1400px, calc(100% - 48px));
   margin: 0 auto;
-  padding: 0 0 40px;
+  padding: 0 0 28px;
 }
 
 /* =========================================================
@@ -19,62 +39,66 @@
    ========================================================= */
 
 .dashboard-topbar {
-  min-height: 72px;
+  min-height: 64px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
-  border-bottom: 1px solid #e5e7eb;
+  gap: 20px;
+  border-bottom: 1px solid #e4e7ec;
 }
 
 .brand-area {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .brand-mark {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 9px;
   background: #172033;
   color: #ffffff;
 }
 
 .brand-name {
-  font-size: 17px;
+  font-size: 16px;
+  line-height: 1.1;
   font-weight: 750;
   letter-spacing: -0.02em;
 }
 
 .brand-caption {
   margin-top: 2px;
-  font-size: 12px;
+  font-size: 11px;
+  line-height: 1.2;
   color: #7b8494;
 }
 
 .topbar-actions {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 14px;
 }
 
 .user-profile {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 9px;
 }
 
 .user-avatar {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 50%;
   background: #eef1f5;
   color: #596273;
 }
@@ -82,36 +106,40 @@
 .user-profile-text {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
 }
 
 .user-profile-text strong {
-  font-size: 13px;
+  font-size: 12px;
+  line-height: 1.2;
   font-weight: 650;
+  color: #273143;
 }
 
 .user-profile-text span {
-  font-size: 11px;
+  font-size: 10px;
+  line-height: 1.2;
   color: #8a93a3;
 }
 
 .logout-button {
-  border: 1px solid #e1e5ea;
+  min-height: 34px;
+  padding: 0 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid #dfe4ea;
+  border-radius: 8px;
   background: #ffffff;
   color: #4c5668;
-  min-height: 36px;
-  padding: 0 12px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  gap: 7px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   transition:
-    background 0.2s ease,
-    border-color 0.2s ease,
-    color 0.2s ease;
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .logout-button:hover {
@@ -125,29 +153,32 @@
    ========================================================= */
 
 .welcome-section {
-  padding: 42px 0 28px;
+  padding: 28px 0 20px;
 }
 
 .section-kicker {
-  margin-bottom: 7px;
+  margin-bottom: 5px;
   color: #7b8494;
-  font-size: 11px;
+  font-size: 10px;
+  line-height: 1.2;
   font-weight: 750;
   letter-spacing: 0.12em;
 }
 
 .welcome-section h1 {
   margin: 0;
-  font-size: clamp(26px, 3vw, 34px);
-  line-height: 1.15;
-  letter-spacing: -0.035em;
   color: #151c2c;
+  font-size: clamp(24px, 3vw, 31px);
+  line-height: 1.12;
+  font-weight: 750;
+  letter-spacing: -0.035em;
 }
 
 .welcome-section p {
-  margin: 10px 0 0;
+  margin: 7px 0 0;
   color: #737d8d;
-  font-size: 14px;
+  font-size: 13px;
+  line-height: 1.45;
 }
 
 /* =========================================================
@@ -155,32 +186,33 @@
    ========================================================= */
 
 .website-hero {
+  min-height: 82px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 28px;
-  padding: 24px;
+  gap: 20px;
+  padding: 16px 18px;
   background: #ffffff;
-  border: 1px solid #e3e7ed;
-  border-radius: 14px;
-  box-shadow: 0 3px 12px rgba(16, 24, 40, 0.04);
+  border: 1px solid #e1e5eb;
+  border-radius: 12px;
+  box-shadow: 0 2px 7px rgba(16, 24, 40, 0.025);
 }
 
 .website-hero-main {
+  min-width: 0;
   display: flex;
   align-items: center;
-  gap: 16px;
-  min-width: 0;
+  gap: 12px;
 }
 
 .website-logo {
+  width: 44px;
+  height: 44px;
   flex: 0 0 auto;
-  width: 52px;
-  height: 52px;
-  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 10px;
   background: #f0f3f7;
   color: #364152;
 }
@@ -190,17 +222,19 @@
 }
 
 .website-label {
-  margin-bottom: 4px;
-  font-size: 10px;
+  margin-bottom: 3px;
+  color: #8a93a3;
+  font-size: 9px;
+  line-height: 1.2;
   font-weight: 750;
   letter-spacing: 0.12em;
-  color: #8a93a3;
 }
 
 .website-hero-content h2 {
   margin: 0;
   color: #171f30;
-  font-size: 22px;
+  font-size: 18px;
+  line-height: 1.2;
   font-weight: 720;
   letter-spacing: -0.025em;
 }
@@ -209,23 +243,25 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 9px;
-  margin-top: 8px;
+  gap: 6px;
+  margin-top: 5px;
   color: #7b8494;
-  font-size: 12px;
+  font-size: 10px;
+  line-height: 1.3;
 }
 
 .ready-indicator {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   color: #317653;
   font-weight: 600;
 }
 
 .ready-dot {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
+  flex: 0 0 auto;
   border-radius: 50%;
   background: #48a868;
 }
@@ -237,26 +273,28 @@
 .website-hero-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex-shrink: 0;
 }
 
 .website-edit-button,
 .website-open-button {
-  min-height: 38px;
-  border-radius: 8px;
-  padding: 0 14px;
+  min-height: 34px;
+  padding: 0 11px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
-  font-size: 12px;
-  font-weight: 650;
+  gap: 6px;
+  border-radius: 7px;
   cursor: pointer;
+  font-size: 11px;
+  font-weight: 650;
+  white-space: nowrap;
   transition:
-    background 0.2s ease,
-    border-color 0.2s ease,
-    transform 0.15s ease;
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    opacity 0.15s ease;
 }
 
 .website-edit-button {
@@ -278,7 +316,6 @@
 
 .website-open-button:hover:not(:disabled) {
   background: #242e42;
-  transform: translateY(-1px);
 }
 
 .website-open-button:disabled {
@@ -287,49 +324,52 @@
 }
 
 /* =========================================================
-   ANALYTICS
+   WEBSITE ANALYTICS
    ========================================================= */
 
 .analytics-section {
-  margin-top: 34px;
+  margin-top: 22px;
 }
 
 .analytics-section-header {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 20px;
-  margin-bottom: 16px;
+  gap: 16px;
+  margin-bottom: 10px;
 }
 
 .analytics-section-header h2,
 .enquiries-section-header h2 {
   margin: 0;
   color: #171f30;
-  font-size: 20px;
+  font-size: 18px;
+  line-height: 1.2;
   font-weight: 720;
   letter-spacing: -0.025em;
 }
 
 .analytics-section-header p,
 .enquiries-section-header p {
-  margin: 6px 0 0;
+  margin: 4px 0 0;
   color: #7b8494;
-  font-size: 13px;
+  font-size: 12px;
+  line-height: 1.4;
 }
 
 .analytics-refresh-button {
-  min-height: 34px;
-  padding: 0 11px;
+  min-height: 31px;
+  padding: 0 9px;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 6px;
+  flex-shrink: 0;
   border: 1px solid #dfe4ea;
+  border-radius: 7px;
   background: #ffffff;
   color: #596273;
-  border-radius: 8px;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
 }
 
@@ -343,64 +383,70 @@
   cursor: not-allowed;
 }
 
-.refresh-spinning {
-  animation: spin 0.9s linear infinite;
-}
-
 .analytics-error {
-  margin-bottom: 14px;
-  padding: 11px 13px;
-  border: 1px solid #f1d0d0;
-  border-radius: 9px;
-  background: #fff8f8;
-  color: #a13b3b;
+  margin-bottom: 10px;
+  padding: 9px 11px;
   display: flex;
   align-items: center;
-  gap: 9px;
-  font-size: 12px;
+  gap: 8px;
+  border: 1px solid #f1d0d0;
+  border-radius: 8px;
+  background: #fff8f8;
+  color: #a13b3b;
+  font-size: 11px;
 }
+
+/* =========================================================
+   ANALYTICS CARDS
+   Keep all four cards exactly equal in size.
+   ========================================================= */
 
 .analytics-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
 }
 
 .analytics-card {
   position: relative;
-  min-height: 174px;
-  padding: 20px;
-  background: #ffffff;
-  border: 1px solid #e3e7ed;
-  border-radius: 13px;
-  box-shadow: 0 3px 12px rgba(16, 24, 40, 0.035);
+  min-width: 0;
+  height: 112px;
+  padding: 13px 14px;
   overflow: hidden;
+  background: #ffffff;
+  border: 1px solid #e1e5eb;
+  border-radius: 10px;
+  box-shadow: 0 2px 7px rgba(16, 24, 40, 0.025);
 }
 
 .analytics-card::after {
   content: "";
   position: absolute;
-  width: 80px;
-  height: 80px;
-  right: -28px;
-  bottom: -30px;
+  width: 58px;
+  height: 58px;
+  right: -25px;
+  bottom: -25px;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.025);
+  background: rgba(0, 0, 0, 0.022);
+  pointer-events: none;
 }
 
 .analytics-card-top {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
 .analytics-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  width: 31px;
+  height: 31px;
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 8px;
 }
 
 .analytics-pageviews .analytics-icon {
@@ -425,63 +471,80 @@
 
 .analytics-period {
   color: #9aa2af;
-  font-size: 10px;
+  font-size: 9px;
+  line-height: 1.2;
   font-weight: 600;
 }
 
 .analytics-value {
-  margin-top: 18px;
+  position: relative;
+  z-index: 1;
+  margin-top: 9px;
   color: #151c2c;
-  font-size: 30px;
+  font-size: 23px;
   line-height: 1;
   font-weight: 750;
   letter-spacing: -0.04em;
 }
 
 .analytics-label {
-  margin-top: 7px;
+  position: relative;
+  z-index: 1;
+  margin-top: 4px;
   color: #343e4f;
-  font-size: 13px;
+  font-size: 12px;
+  line-height: 1.2;
   font-weight: 700;
 }
 
 .analytics-card p {
-  margin: 5px 0 0;
-  max-width: 210px;
+  position: relative;
+  z-index: 1;
+  margin: 3px 0 0;
+  max-width: 220px;
   color: #8992a1;
-  font-size: 11px;
-  line-height: 1.45;
+  font-size: 10px;
+  line-height: 1.3;
 }
 
 /* =========================================================
    ENQUIRY STATISTICS
+   Kept intact for HTML compatibility.
+   
+   NOTE:
+   The actual customer activity information is already shown
+   again inside the enquiry filter bar. These cards are therefore
+   visually minimized rather than changing the working HTML.
    ========================================================= */
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
-  margin-top: 18px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 10px;
 }
 
 .stat-card {
-  min-height: 82px;
-  padding: 15px 16px;
-  background: #ffffff;
-  border: 1px solid #e3e7ed;
-  border-radius: 12px;
+  min-width: 0;
+  height: 64px;
+  padding: 9px 12px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 9px;
+  background: #ffffff;
+  border: 1px solid #e1e5eb;
+  border-radius: 10px;
+  box-shadow: 0 2px 7px rgba(16, 24, 40, 0.018);
 }
 
 .stat-icon {
-  width: 38px;
-  height: 38px;
-  border-radius: 9px;
+  width: 31px;
+  height: 31px;
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 8px;
 }
 
 .stat-icon.total {
@@ -504,82 +567,99 @@
   color: #347952;
 }
 
+.stat-card > div:last-child {
+  min-width: 0;
+}
+
 .stat-card span {
   display: block;
   color: #7d8695;
-  font-size: 11px;
+  font-size: 10px;
+  line-height: 1.2;
 }
 
 .stat-card strong {
   display: block;
-  margin-top: 3px;
+  margin-top: 2px;
   color: #1a2232;
-  font-size: 21px;
+  font-size: 17px;
+  line-height: 1;
   font-weight: 720;
 }
 
 /* =========================================================
-   ENQUIRIES
+   CUSTOMER ACTIVITY
+   DO NOT CHANGE — stable working section
    ========================================================= */
 
 .enquiries-section {
-  margin-top: 34px;
+  margin-top: 22px;
 }
 
 .enquiries-section-header {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 20px;
-  margin-bottom: 18px;
+  gap: 16px;
+  margin-bottom: 10px;
 }
 
 .enquiries-total {
+  min-height: 31px;
+  padding: 0 9px;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 8px 11px;
+  gap: 6px;
+  flex-shrink: 0;
   border: 1px solid #e0e5eb;
-  border-radius: 8px;
+  border-radius: 7px;
   background: #ffffff;
   color: #687284;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
 }
+
+/* =========================================================
+   FILTERS
+   DO NOT CHANGE — stable working section
+   ========================================================= */
 
 .enquiry-filter-bar {
   display: flex;
   align-items: center;
-  gap: 7px;
-  margin-bottom: 14px;
+  gap: 4px;
+  margin-bottom: 9px;
 }
 
 .filter-button {
-  min-height: 34px;
-  padding: 0 11px;
+  min-height: 30px;
+  padding: 0 9px;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: 7px;
   background: transparent;
   color: #707a8b;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
 }
 
 .filter-button span {
-  min-width: 20px;
-  height: 20px;
-  padding: 0 5px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
+  border-radius: 9px;
   background: #e9edf2;
   color: #657082;
-  font-size: 10px;
+  font-size: 9px;
 }
 
 .filter-button:hover {
@@ -596,38 +676,46 @@
   color: #ffffff;
 }
 
+/* =========================================================
+   ENQUIRY TABLE
+   DO NOT CHANGE — scrolling and table structure preserved
+   ========================================================= */
+
 .enquiry-table {
   overflow: hidden;
   background: #ffffff;
   border: 1px solid #e1e5eb;
-  border-radius: 13px;
+  border-radius: 11px;
+  box-shadow: 0 2px 7px rgba(16, 24, 40, 0.018);
 }
 
 .enquiry-table-header,
 .enquiry-row {
   display: grid;
-  grid-template-columns: minmax(220px, 1.2fr) minmax(200px, 1fr) minmax(
-      190px,
-      0.8fr
-    ) 48px;
+  grid-template-columns:
+    minmax(220px, 1.25fr)
+    minmax(180px, 1fr)
+    minmax(240px, 1.05fr)
+    42px;
   align-items: center;
 }
 
 .enquiry-table-header {
-  min-height: 42px;
-  padding: 0 16px;
+  min-height: 38px;
+  padding: 0 14px;
   background: #f8f9fb;
   border-bottom: 1px solid #e6e9ee;
   color: #8a93a1;
-  font-size: 10px;
+  font-size: 9px;
+  line-height: 1;
   font-weight: 750;
   letter-spacing: 0.07em;
   text-transform: uppercase;
 }
 
 .enquiry-row {
-  min-height: 72px;
-  padding: 0 16px;
+  min-height: 62px;
+  padding: 0 14px;
   border-bottom: 1px solid #edf0f3;
 }
 
@@ -635,16 +723,20 @@
   border-bottom: 0;
 }
 
+/* =========================================================
+   CUSTOMER CELL
+   ========================================================= */
+
 .customer-cell {
+  min-width: 0;
   display: flex;
   align-items: center;
-  gap: 10px;
-  min-width: 0;
+  gap: 9px;
 }
 
 .customer-avatar {
-  width: 34px;
-  height: 34px;
+  width: 31px;
+  height: 31px;
   flex: 0 0 auto;
   display: flex;
   align-items: center;
@@ -652,7 +744,7 @@
   border-radius: 50%;
   background: #eef1f5;
   color: #4f5b6e;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
 }
 
@@ -660,64 +752,86 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
 }
 
 .customer-info strong {
+  overflow: hidden;
   color: #263043;
-  font-size: 13px;
+  font-size: 12px;
+  line-height: 1.2;
   font-weight: 650;
   white-space: nowrap;
-  overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .customer-info a {
+  overflow: hidden;
   color: #8a93a1;
-  font-size: 11px;
+  font-size: 10px;
+  line-height: 1.2;
   text-decoration: none;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .customer-info a:hover {
   color: #4d5a6d;
 }
 
+/* =========================================================
+   REQUEST CELL
+   ========================================================= */
+
 .request-cell {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 
 .request-cell strong {
+  overflow: hidden;
   color: #30394a;
-  font-size: 12px;
+  font-size: 11px;
+  line-height: 1.2;
   font-weight: 650;
   white-space: nowrap;
-  overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .request-cell span {
   color: #8b94a3;
-  font-size: 11px;
+  font-size: 10px;
+  line-height: 1.2;
+}
+
+/* =========================================================
+   STATUS CELL
+   ========================================================= */
+
+.status-cell {
+  min-width: 0;
 }
 
 .status-control {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
 }
 
 .status-badge {
-  min-height: 27px;
-  padding: 0 8px;
+  min-height: 25px;
+  padding: 0 7px;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  border-radius: 7px;
-  font-size: 10px;
+  gap: 4px;
+  flex: 0 0 auto;
+  border-radius: 6px;
+  font-size: 9px;
+  line-height: 1;
   font-weight: 700;
+  white-space: nowrap;
 }
 
 .status-badge.new {
@@ -736,31 +850,46 @@
 }
 
 .status-control select {
-  height: 27px;
-  padding: 0 24px 0 7px;
+  height: 25px;
+  min-width: 86px;
+  padding: 0 22px 0 6px;
   border: 1px solid #e0e4e9;
   border-radius: 6px;
+  outline: none;
   background: #ffffff;
   color: #6d7686;
-  font-size: 10px;
+  font-size: 9px;
   cursor: pointer;
 }
 
+.status-control select:focus {
+  border-color: #b9c1cc;
+}
+
+/* =========================================================
+   EXPAND BUTTON
+   ========================================================= */
+
 .expand-button {
-  width: 32px;
-  height: 32px;
+  width: 29px;
+  height: 29px;
   display: flex;
   align-items: center;
   justify-content: center;
   border: 1px solid #e2e6eb;
-  border-radius: 7px;
+  border-radius: 6px;
   background: #ffffff;
   color: #717b8c;
   cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .expand-button:hover {
   background: #f6f8fa;
+  border-color: #d5dae1;
   color: #303a4b;
 }
 
@@ -769,24 +898,25 @@
    ========================================================= */
 
 .enquiry-expanded {
-  padding: 18px 20px 20px;
+  padding: 14px 18px 16px;
   background: #fafbfc;
   border-top: 1px solid #edf0f3;
 }
 
 .expanded-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 9px;
 }
 
 .expanded-detail {
+  min-width: 0;
   display: flex;
   align-items: flex-start;
-  gap: 9px;
-  padding: 12px;
+  gap: 8px;
+  padding: 10px;
   border: 1px solid #e4e8ed;
-  border-radius: 9px;
+  border-radius: 8px;
   background: #ffffff;
   color: #657082;
 }
@@ -797,59 +927,62 @@
 
 .expanded-detail span {
   display: block;
-  margin-bottom: 3px;
+  margin-bottom: 2px;
   color: #929aa8;
-  font-size: 10px;
+  font-size: 9px;
+  line-height: 1.2;
 }
 
 .expanded-detail strong {
   display: block;
   color: #30394a;
-  font-size: 11px;
+  font-size: 10px;
+  line-height: 1.35;
   font-weight: 650;
   word-break: break-word;
 }
 
 .expanded-message {
-  margin-top: 12px;
-  padding: 13px;
+  margin-top: 9px;
+  padding: 11px;
   border: 1px solid #e4e8ed;
-  border-radius: 9px;
+  border-radius: 8px;
   background: #ffffff;
 }
 
 .expanded-message > span {
   color: #8b94a2;
-  font-size: 10px;
+  font-size: 9px;
+  line-height: 1.2;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .expanded-message p {
-  margin: 7px 0 0;
+  margin: 5px 0 0;
   color: #4c5668;
-  font-size: 12px;
-  line-height: 1.55;
+  font-size: 11px;
+  line-height: 1.5;
 }
 
 .expanded-actions {
-  margin-top: 13px;
+  margin-top: 10px;
   display: flex;
   justify-content: flex-end;
 }
 
 .contact-customer-button {
-  min-height: 35px;
-  padding: 0 12px;
+  min-height: 32px;
+  padding: 0 11px;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 6px;
   border-radius: 7px;
   background: #172033;
   color: #ffffff;
   text-decoration: none;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 650;
 }
 
@@ -862,21 +995,21 @@
    ========================================================= */
 
 .dashboard-loading {
-  min-height: 180px;
+  min-height: 130px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 9px;
   background: #ffffff;
   border: 1px solid #e1e5eb;
-  border-radius: 13px;
+  border-radius: 11px;
   color: #7e8796;
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .loading-spinner {
-  width: 17px;
-  height: 17px;
+  width: 16px;
+  height: 16px;
   border: 2px solid #e1e5eb;
   border-top-color: #172033;
   border-radius: 50%;
@@ -884,44 +1017,44 @@
 }
 
 .dashboard-error {
-  min-height: 120px;
-  padding: 20px;
+  min-height: 90px;
+  padding: 16px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   background: #fff9f9;
   border: 1px solid #efd2d2;
-  border-radius: 13px;
+  border-radius: 11px;
   color: #a04747;
 }
 
 .dashboard-error strong {
   display: block;
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .dashboard-error p {
-  margin: 4px 0 0;
+  margin: 3px 0 0;
   color: #9a6666;
-  font-size: 11px;
+  font-size: 10px;
 }
 
 .dashboard-empty {
-  padding: 52px 24px;
+  padding: 38px 20px;
   text-align: center;
   background: #ffffff;
   border: 1px solid #e1e5eb;
-  border-radius: 13px;
+  border-radius: 11px;
 }
 
 .empty-icon {
-  width: 48px;
-  height: 48px;
-  margin: 0 auto 13px;
+  width: 42px;
+  height: 42px;
+  margin: 0 auto 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 12px;
+  border-radius: 10px;
   background: #f0f2f5;
   color: #707a89;
 }
@@ -929,39 +1062,40 @@
 .dashboard-empty h3 {
   margin: 0;
   color: #30394a;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .dashboard-empty p {
   max-width: 430px;
-  margin: 7px auto 0;
+  margin: 6px auto 0;
   color: #8a93a2;
-  font-size: 12px;
-  line-height: 1.5;
+  font-size: 11px;
+  line-height: 1.45;
 }
 
 /* =========================================================
    LOAD MORE
+   Stable scrolling/load-more behavior preserved
    ========================================================= */
 
 .load-more-container {
   display: flex;
   justify-content: center;
-  padding-top: 16px;
+  padding-top: 12px;
 }
 
 .load-more-button {
-  min-height: 37px;
-  padding: 0 14px;
+  min-height: 34px;
+  padding: 0 12px;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 6px;
   border: 1px solid #dfe4ea;
-  border-radius: 8px;
+  border-radius: 7px;
   background: #ffffff;
   color: #596273;
   cursor: pointer;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 650;
 }
 
@@ -979,15 +1113,15 @@
    ========================================================= */
 
 .dashboard-footer {
-  margin-top: 42px;
-  padding-top: 20px;
-  border-top: 1px solid #e3e7ec;
+  margin-top: 26px;
+  padding-top: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 9px;
+  gap: 8px;
+  border-top: 1px solid #e3e7ec;
   color: #9aa2ae;
-  font-size: 10px;
+  font-size: 9px;
 }
 
 .footer-brand {
@@ -1014,19 +1148,32 @@
 }
 
 /* =========================================================
-   RESPONSIVE
+   TABLET
    ========================================================= */
 
 @media (max-width: 1100px) {
   .analytics-grid,
   .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .expanded-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .enquiry-table {
+    overflow-x: auto;
+  }
+
+  .enquiry-table-header,
+  .enquiry-row {
+    min-width: 760px;
   }
 }
+
+/* =========================================================
+   SMALL LAPTOP / TABLET
+   ========================================================= */
 
 @media (max-width: 850px) {
   .dashboard-container {
@@ -1034,7 +1181,7 @@
   }
 
   .dashboard-topbar {
-    min-height: 64px;
+    min-height: 60px;
   }
 
   .user-profile-text {
@@ -1054,24 +1201,20 @@
   .website-open-button {
     flex: 1;
   }
-
-  .enquiry-table {
-    overflow-x: auto;
-  }
-
-  .enquiry-table-header,
-  .enquiry-row {
-    min-width: 760px;
-  }
 }
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
 
 @media (max-width: 600px) {
   .dashboard-container {
-    width: min(100% - 20px, 520px);
+    width: calc(100% - 16px);
+    max-width: 520px;
   }
 
   .dashboard-topbar {
-    gap: 10px;
+    gap: 8px;
   }
 
   .brand-caption {
@@ -1083,21 +1226,24 @@
   }
 
   .logout-button {
-    width: 36px;
+    width: 34px;
     padding: 0;
-    justify-content: center;
   }
 
   .welcome-section {
-    padding: 30px 0 22px;
+    padding: 22px 0 16px;
   }
 
   .welcome-section h1 {
-    font-size: 26px;
+    font-size: 24px;
+  }
+
+  .welcome-section p {
+    font-size: 12px;
   }
 
   .website-hero {
-    padding: 18px;
+    padding: 15px;
   }
 
   .website-hero-main {
@@ -1105,12 +1251,16 @@
   }
 
   .website-logo {
-    width: 44px;
-    height: 44px;
+    width: 40px;
+    height: 40px;
   }
 
   .website-hero-content h2 {
-    font-size: 19px;
+    font-size: 17px;
+  }
+
+  .website-meta {
+    font-size: 10px;
   }
 
   .website-hero-actions {
@@ -1122,19 +1272,55 @@
     width: 100%;
   }
 
+  .analytics-section,
+  .enquiries-section {
+    margin-top: 20px;
+  }
+
   .analytics-section-header,
   .enquiries-section-header {
     align-items: flex-start;
     flex-direction: column;
+    margin-bottom: 10px;
   }
 
   .analytics-grid,
   .stats-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
   }
 
   .analytics-card {
-    min-height: 155px;
+    height: 108px;
+    padding: 11px;
+  }
+
+  .analytics-icon,
+  .stat-icon {
+    width: 29px;
+    height: 29px;
+  }
+
+  .analytics-value {
+    margin-top: 8px;
+    font-size: 21px;
+  }
+
+  .analytics-label {
+    font-size: 11px;
+  }
+
+  .analytics-card p {
+    font-size: 9px;
+  }
+
+  .stat-card {
+    height: 58px;
+    padding: 8px 9px;
+  }
+
+  .stat-card strong {
+    font-size: 16px;
   }
 
   .expanded-grid {
@@ -1143,7 +1329,7 @@
 
   .enquiry-filter-bar {
     overflow-x: auto;
-    padding-bottom: 3px;
+    padding-bottom: 2px;
   }
 
   .filter-button {
@@ -1152,5 +1338,33 @@
 
   .dashboard-footer {
     flex-wrap: wrap;
+    margin-top: 22px;
+  }
+}
+
+/* =========================================================
+   VERY SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 380px) {
+  .dashboard-container {
+    width: calc(100% - 12px);
+  }
+
+  .analytics-grid,
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .analytics-card {
+    height: 100px;
+  }
+
+  .stats-grid {
+    gap: 7px;
+  }
+
+  .stat-card {
+    height: 58px;
   }
 }
