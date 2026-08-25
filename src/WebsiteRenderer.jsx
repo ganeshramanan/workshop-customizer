@@ -193,21 +193,18 @@ function WebsiteRenderer({
           <div className="hero-text">
             <div className="hero-badge">
               <span>✓</span>
-
               {heroBadge || "Welcome"}
             </div>
 
             <h1>
               {heroTitle || businessName || "Your Business"}
-
               <br />
-
-              <span>{heroSubTitle || "Quality you can trust."}</span>
+              <span>{heroSubTitle || "Here to serve you."}</span>
             </h1>
 
             <p className="hero-description">
               {about ||
-                `${businessName} is here to provide quality products and services with a focus on customer satisfaction.`}
+                `${businessName} provides services with a focus on quality, reliability, and customer satisfaction.`}
             </p>
 
             <div className="hero-actions">
@@ -227,33 +224,6 @@ function WebsiteRenderer({
                 View Services
               </button>
             </div>
-
-            <div className="hero-trust">
-              <span>✓ Quality service</span>
-
-              <span>✓ Professional approach</span>
-
-              <span>✓ Customer focused</span>
-            </div>
-          </div>
-
-          <div className="hero-card">
-            <div className="hero-card-icon">✨</div>
-
-            <h3>We're here to help.</h3>
-
-            <p>
-              Discover our services and get in touch with us to learn more about
-              what {businessName} can offer you.
-            </p>
-
-            <button
-              type="button"
-              className="hero-card-button"
-              onClick={() => scrollToSection("book")}
-            >
-              Enquire now →
-            </button>
           </div>
         </div>
       </section>
@@ -481,7 +451,6 @@ function WebsiteRenderer({
       {/* ==================================================
           ABOUT
       ================================================== */}
-
       <section id="about" className="about-section">
         <div className="public-container about-grid">
           <div className="about-visual">
@@ -489,11 +458,7 @@ function WebsiteRenderer({
               <img
                 src={displayLogo}
                 alt={`${businessName} logo`}
-                style={{
-                  maxWidth: "55%",
-                  maxHeight: "55%",
-                  objectFit: "contain",
-                }}
+                className="about-logo"
               />
             ) : (
               <div className="about-icon">🏢</div>
@@ -501,46 +466,49 @@ function WebsiteRenderer({
 
             <div className="about-floating-card">
               <strong>{businessName}</strong>
-
-              <span>Quality you can trust</span>
+              <span>
+                {safeServices.length} service
+                {safeServices.length === 1 ? "" : "s"} available
+              </span>
             </div>
           </div>
 
           <div className="about-content">
             <span className="section-label">ABOUT US</span>
 
-            <h2>Built around our customers.</h2>
+            <h2>Get to know {businessName}.</h2>
 
             <p>
               {about ||
-                `${businessName} is committed to providing quality service and a positive customer experience.`}
+                `${businessName} is committed to providing dependable service and a positive experience for every customer.`}
             </p>
 
-            <div className="about-points">
+            <div className="about-summary">
               <div>
-                <span>✓</span>
-
-                <p>Quality service</p>
+                <strong>{safeServices.length}</strong>
+                <span>Services</span>
               </div>
 
               <div>
-                <span>✓</span>
-
-                <p>Professional approach</p>
+                <strong>{safeGallery.length}</strong>
+                <span>Photos</span>
               </div>
 
-              <div>
-                <span>✓</span>
-
-                <p>Customer-first approach</p>
-              </div>
-
-              <div>
-                <span>✓</span>
-
-                <p>Easy to get in touch</p>
-              </div>
+              {hours && (
+                <div>
+                  <strong>Hours</strong>
+                  <span>{hours}</span>
+                </div>
+              )}
             </div>
+
+            <button
+              type="button"
+              className="about-action"
+              onClick={() => scrollToSection("contact")}
+            >
+              Contact {businessName}
+            </button>
           </div>
         </div>
       </section>
