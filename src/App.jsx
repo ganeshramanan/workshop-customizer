@@ -32,11 +32,17 @@ function App() {
   const [gallery, setGallery] = useState([]);
 
   // ==================================================
-  // HERO
+  // HERO / BUSINESS INTRODUCTION
   // ==================================================
 
+  // heroTitle is now used internally as Business Introduction.
   const [heroTitle, setHeroTitle] = useState("");
+
+  // heroSubtitle is now used as Business Tagline.
   const [heroSubtitle, setHeroSubtitle] = useState("");
+
+  // Kept for backend compatibility, but no longer exposed
+  // as a customer-facing field.
   const [heroBadge, setHeroBadge] = useState("");
 
   // ==================================================
@@ -84,6 +90,9 @@ function App() {
         setPhone(data.phone || "");
         setAbout(data.about || "");
 
+        // Existing backend fields
+        // heroTitle -> Business Introduction
+        // heroSubtitle -> Business Tagline
         setHeroTitle(data.heroTitle || "");
         setHeroSubtitle(data.heroSubtitle || "");
         setHeroBadge(data.heroBadge || "");
@@ -118,18 +127,20 @@ function App() {
         // ==================================================
 
         if (Array.isArray(data.gallery)) {
-          const normalizedGallery = data.gallery.map((image, index) => ({
-            id: image.id || `saved-${index}-${Date.now()}`,
-            url: image.url || image.image_url || image.imageUrl,
-            name:
-              image.name ||
-              image.file_name ||
-              image.fileName ||
-              `Gallery image ${index + 1}`,
-            saved: true,
-          }));
+          const normalizedGallery = data.gallery
+            .map((image, index) => ({
+              id: image.id || `saved-${index}-${Date.now()}`,
+              url: image.url || image.image_url || image.imageUrl,
+              name:
+                image.name ||
+                image.file_name ||
+                image.fileName ||
+                `Gallery image ${index + 1}`,
+              saved: true,
+            }))
+            .filter((image) => image.url);
 
-          setGallery(normalizedGallery.filter((image) => image.url));
+          setGallery(normalizedGallery);
         } else {
           setGallery([]);
         }
@@ -176,9 +187,14 @@ function App() {
       businessName,
       phone,
       about,
+
+      // Existing backend fields:
+      // heroTitle = Business Introduction
+      // heroSubtitle = Business Tagline
       heroTitle,
       heroSubtitle,
       heroBadge,
+
       logo,
       theme,
       address,
@@ -238,10 +254,6 @@ function App() {
       return;
     }
 
-    // ==================================================
-    // VALIDATION
-    // ==================================================
-
     const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
     if (!allowedTypes.includes(file.type)) {
@@ -250,10 +262,6 @@ function App() {
       event.target.value = "";
       return;
     }
-
-    // ==================================================
-    // 5 MB LIMIT
-    // ==================================================
 
     if (file.size > 5 * 1024 * 1024) {
       alert("Logo image must be smaller than 5 MB.");
@@ -266,7 +274,6 @@ function App() {
       setSaveStatus("saving");
 
       const formData = new FormData();
-
       formData.append("logo", file);
 
       const response = await fetch(`${API_URL}/api/websites/upload-logo`, {
@@ -409,11 +416,6 @@ function App() {
 
     const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
-    // ==================================================
-    // VALIDATE FILES
-    // Backend limit is 2 MB per file.
-    // ==================================================
-
     const validFiles = files.filter((file) => {
       if (!allowedTypes.includes(file.type)) {
         alert(
@@ -446,10 +448,6 @@ function App() {
         formData.append("gallery", file);
       });
 
-      // ==================================================
-      // UPLOAD TO BACKEND
-      // ==================================================
-
       const response = await fetch(`${API_URL}/api/websites/upload-gallery`, {
         method: "POST",
 
@@ -468,20 +466,12 @@ function App() {
 
       console.log("Gallery uploaded:", result);
 
-      // ==================================================
-      // NORMALIZE RETURNED IMAGES
-      // ==================================================
-
       const uploadedImages = (result.images || []).map((image) => ({
         id: image.id,
         url: image.imageUrl,
         name: image.fileName || "Gallery image",
         saved: true,
       }));
-
-      // ==================================================
-      // UPDATE REACT STATE
-      // ==================================================
 
       setGallery((previous) => [...previous, ...uploadedImages]);
 
@@ -523,20 +513,12 @@ function App() {
       setWebsite(data);
 
       setBusinessName(data.businessName || "");
-
       setPhone(data.phone || "");
-
       setAbout(data.about || "");
 
       setHeroTitle(data.heroTitle || "");
-
       setHeroSubtitle(data.heroSubtitle || "");
-
       setHeroBadge(data.heroBadge || "");
-
-      // ==================================================
-      // LOGO
-      // ==================================================
 
       if (data.logo) {
         if (data.logo.startsWith("http")) {
@@ -548,46 +530,36 @@ function App() {
         setLogo(null);
       }
 
-      // ==================================================
-      // OTHER DATA
-      // ==================================================
-
       setTheme(data.theme || "blue");
-
       setAddress(data.address || "");
-
       setWhatsapp(data.whatsapp || "");
-
       setHours(data.hours || "");
 
       setServices(Array.isArray(data.services) ? data.services : []);
 
-      // ==================================================
-      // GALLERY
-      // ==================================================
-
       if (Array.isArray(data.gallery)) {
-        const normalizedGallery = data.gallery.map((image, index) => ({
-          id: image.id || `saved-${index}-${Date.now()}`,
+        const normalizedGallery = data.gallery
+          .map((image, index) => ({
+            id: image.id || `saved-${index}-${Date.now()}`,
 
-          url: image.url || image.image_url || image.imageUrl,
+            url: image.url || image.image_url || image.imageUrl,
 
-          name:
-            image.name ||
-            image.file_name ||
-            image.fileName ||
-            `Gallery image ${index + 1}`,
+            name:
+              image.name ||
+              image.file_name ||
+              image.fileName ||
+              `Gallery image ${index + 1}`,
 
-          saved: true,
-        }));
+            saved: true,
+          }))
+          .filter((image) => image.url);
 
-        setGallery(normalizedGallery.filter((image) => image.url));
+        setGallery(normalizedGallery);
       } else {
         setGallery([]);
       }
 
       setSaveStatus("saved");
-
       setShowDashboard(true);
     } catch (error) {
       console.error("Error returning to dashboard:", error);
@@ -712,7 +684,7 @@ function App() {
     <div className="website-customizer">
       {/* ==================================================
           EDITOR PANE
-      ================================================== */}
+          ================================================== */}
 
       <div
         className={`editor-pane ${
@@ -722,7 +694,7 @@ function App() {
         <div className="editor">
           {/* ==================================================
               EDITOR HEADER
-          ================================================== */}
+              ================================================== */}
 
           <div className="editor-header">
             <button
@@ -734,7 +706,6 @@ function App() {
 
             <div className="editor-header-title">
               <h1>Website Customizer</h1>
-
               <span>Edit your website</span>
             </div>
 
@@ -761,7 +732,7 @@ function App() {
 
           {/* ==================================================
               BUSINESS SECTION
-          ================================================== */}
+              ================================================== */}
 
           <div className="editor-section">
             <button
@@ -774,7 +745,7 @@ function App() {
                 <span>
                   <strong>Business</strong>
 
-                  <small>Business name & logo</small>
+                  <small>Business name, tagline & logo</small>
                 </span>
               </div>
 
@@ -792,6 +763,24 @@ function App() {
                   value={businessName}
                   onChange={markUnsaved(setBusinessName)}
                   placeholder="Your business name"
+                />
+
+                <label>Business Tagline (optional)</label>
+
+                <input
+                  type="text"
+                  value={heroSubtitle}
+                  onChange={markUnsaved(setHeroSubtitle)}
+                  placeholder="Example: Impossible is Possible"
+                />
+
+                <label>Business Introduction (optional)</label>
+
+                <textarea
+                  value={heroTitle}
+                  onChange={markUnsaved(setHeroTitle)}
+                  rows="3"
+                  placeholder="Example: Leading auto service provider in Pammal"
                 />
 
                 <label>Business Logo</label>
@@ -826,7 +815,7 @@ function App() {
 
           {/* ==================================================
               CONTACT SECTION
-          ================================================== */}
+              ================================================== */}
 
           <div className="editor-section">
             <button
@@ -891,7 +880,7 @@ function App() {
 
           {/* ==================================================
               ABOUT SECTION
-          ================================================== */}
+              ================================================== */}
 
           <div className="editor-section">
             <button
@@ -929,7 +918,7 @@ function App() {
 
           {/* ==================================================
               SERVICES SECTION
-          ================================================== */}
+              ================================================== */}
 
           <div className="editor-section">
             <button
@@ -982,7 +971,6 @@ function App() {
                         updatedServices[index] = event.target.value;
 
                         setServices(updatedServices);
-
                         setSaveStatus("unsaved");
                       }}
                       placeholder={`Service ${index + 1}`}
@@ -1042,7 +1030,7 @@ function App() {
 
           {/* ==================================================
               APPEARANCE SECTION
-          ================================================== */}
+              ================================================== */}
 
           <div className="editor-section">
             <button
@@ -1083,7 +1071,7 @@ function App() {
 
           {/* ==================================================
               GALLERY SECTION
-          ================================================== */}
+              ================================================== */}
 
           <div className="editor-section">
             <button
@@ -1202,7 +1190,7 @@ function App() {
 
       {/* ==================================================
           PREVIEW PANE
-      ================================================== */}
+          ================================================== */}
 
       <div
         className={`preview-pane ${
@@ -1261,7 +1249,7 @@ function App() {
 
       {/* ==================================================
           MOBILE BOTTOM NAVIGATION
-      ================================================== */}
+          ================================================== */}
 
       <div className="mobile-editor-nav">
         <button

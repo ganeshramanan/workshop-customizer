@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import "./PublicWebsite.css";
 
 function WebsiteRenderer({
@@ -25,16 +25,10 @@ function WebsiteRenderer({
   bookingStatus,
   handleBookingChange,
   handleBookingSubmit,
-
-  // Analytics handlers
   handleWhatsAppClick,
   handlePhoneClick,
   handleDirectionClick,
 }) {
-  // ==================================================
-  // SAFE DATA
-  // ==================================================
-
   const safeServices = Array.isArray(services) ? services : [];
 
   const safeGallery = Array.isArray(gallery)
@@ -44,13 +38,25 @@ function WebsiteRenderer({
       : [];
 
   // ==================================================
+  // GALLERY LIGHTBOX
+  // ==================================================
+
+  const [selectedGalleryImage, setSelectedGalleryImage] = useState(null);
+
+  const openGalleryImage = (image) => {
+    setSelectedGalleryImage(image);
+  };
+
+  const closeGalleryImage = () => {
+    setSelectedGalleryImage(null);
+  };
+
+  // ==================================================
   // DISPLAY DATA
   // ==================================================
 
   const displayLogo = logoUrl || logo || null;
-
   const displayPhone = phoneNumber || phone || "";
-
   const displayWhatsapp = whatsappNumber || whatsapp || "";
 
   // ==================================================
@@ -67,7 +73,7 @@ function WebsiteRenderer({
     <div className={`public-site ${theme || "blue"}`}>
       {/* ==================================================
           HEADER
-      ================================================== */}
+          ================================================== */}
 
       <header className="public-header">
         <div className="public-container header-inner">
@@ -111,10 +117,6 @@ function WebsiteRenderer({
               Services
             </button>
 
-            {/* ==================================================
-                GALLERY NAVIGATION
-            ================================================== */}
-
             {safeGallery.length > 0 && (
               <button
                 type="button"
@@ -151,10 +153,6 @@ function WebsiteRenderer({
           </nav>
 
           <div className="header-actions">
-            {/* ==================================================
-                PHONE
-            ================================================== */}
-
             {displayPhone && (
               <a
                 className="header-call"
@@ -164,10 +162,6 @@ function WebsiteRenderer({
                 Call
               </a>
             )}
-
-            {/* ==================================================
-                WHATSAPP
-            ================================================== */}
 
             {displayWhatsapp && (
               <a
@@ -186,26 +180,24 @@ function WebsiteRenderer({
 
       {/* ==================================================
           HERO
-      ================================================== */}
+          ================================================== */}
 
       <section id="home" className="hero-section">
         <div className="public-container hero-content">
           <div className="hero-text">
-            <div className="hero-badge">
-              <span>✓</span>
-              {heroBadge || "Welcome"}
-            </div>
-
             <h1>
-              {heroTitle || businessName || "Your Business"}
-              <br />
-              <span>{heroSubTitle || "Here to serve you."}</span>
+              {businessName || "Your Business"}
+
+              {heroSubTitle && (
+                <>
+                  <br />
+
+                  <span>{heroSubTitle}</span>
+                </>
+              )}
             </h1>
 
-            <p className="hero-description">
-              {about ||
-                `${businessName} provides services with a focus on quality, reliability, and customer satisfaction.`}
-            </p>
+            {heroTitle && <p className="hero-description">{heroTitle}</p>}
 
             <div className="hero-actions">
               <button
@@ -230,7 +222,7 @@ function WebsiteRenderer({
 
       {/* ==================================================
           SERVICES
-      ================================================== */}
+          ================================================== */}
 
       <section id="services" className="services-section">
         <div className="public-container">
@@ -253,11 +245,6 @@ function WebsiteRenderer({
                   <div className="service-icon">✓</div>
 
                   <h3>{service}</h3>
-
-                  <p>
-                    Quality {String(service).toLowerCase()} with attention to
-                    detail and customer satisfaction.
-                  </p>
                 </div>
               ))
             ) : (
@@ -271,7 +258,7 @@ function WebsiteRenderer({
 
       {/* ==================================================
           GALLERY
-      ================================================== */}
+          ================================================== */}
 
       <section id="gallery" className="gallery-section">
         <div className="public-container">
@@ -284,15 +271,7 @@ function WebsiteRenderer({
           </div>
 
           {safeGallery.length > 0 ? (
-            <div
-              className="gallery-grid"
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-                gap: "20px",
-                marginTop: "30px",
-              }}
-            >
+            <div className="gallery-grid">
               {safeGallery.map((image, index) => {
                 const imageUrl = image.url || image.imageUrl || image.image_url;
 
@@ -306,41 +285,27 @@ function WebsiteRenderer({
                   return null;
                 }
 
+                const galleryImage = {
+                  ...image,
+                  url: imageUrl,
+                  name: imageName,
+                };
+
                 return (
-                  <div
+                  <button
+                    type="button"
                     className="gallery-item"
                     key={image.id || `gallery-${index}`}
-                    style={{
-                      borderRadius: "14px",
-                      overflow: "hidden",
-                      background: "#f5f5f5",
-                      boxShadow: "0 4px 15px rgba(0,0,0,0.08)",
-                    }}
+                    onClick={() => openGalleryImage(galleryImage)}
+                    aria-label={`Open ${imageName}`}
                   >
-                    <img
-                      src={imageUrl}
-                      alt={imageName}
-                      loading="lazy"
-                      style={{
-                        width: "100%",
-                        height: "220px",
-                        objectFit: "cover",
-                        display: "block",
-                      }}
-                    />
-                  </div>
+                    <img src={imageUrl} alt={imageName} loading="lazy" />
+                  </button>
                 );
               })}
             </div>
           ) : (
-            <div
-              className="empty-gallery"
-              style={{
-                textAlign: "center",
-                padding: "40px 20px",
-                color: "#888",
-              }}
-            >
+            <div className="empty-gallery">
               <p>No gallery photos added yet.</p>
             </div>
           )}
@@ -348,8 +313,44 @@ function WebsiteRenderer({
       </section>
 
       {/* ==================================================
+          GALLERY LIGHTBOX
+          ================================================== */}
+
+      {selectedGalleryImage && (
+        <div
+          className="gallery-lightbox"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Gallery image preview"
+          onClick={closeGalleryImage}
+        >
+          <button
+            type="button"
+            className="gallery-lightbox-close"
+            onClick={(event) => {
+              event.stopPropagation();
+              closeGalleryImage();
+            }}
+            aria-label="Close image"
+          >
+            ×
+          </button>
+
+          <div
+            className="gallery-lightbox-content"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <img
+              src={selectedGalleryImage.url}
+              alt={selectedGalleryImage.name}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* ==================================================
           INQUIRY FORM
-      ================================================== */}
+          ================================================== */}
 
       <section id="book" className="service-request-section">
         <div className="service-request-card">
@@ -363,8 +364,6 @@ function WebsiteRenderer({
 
           <form onSubmit={handleBookingSubmit}>
             <div className="form-grid">
-              {/* NAME */}
-
               <div className="form-group">
                 <label htmlFor="booking-name">Your Name</label>
 
@@ -378,8 +377,6 @@ function WebsiteRenderer({
                   required
                 />
               </div>
-
-              {/* PHONE */}
 
               <div className="form-group">
                 <label htmlFor="booking-phone">Phone Number</label>
@@ -395,8 +392,6 @@ function WebsiteRenderer({
                 />
               </div>
 
-              {/* SERVICE */}
-
               <div className="form-group form-group-full">
                 <label htmlFor="booking-service">Service / Requirement</label>
 
@@ -410,8 +405,6 @@ function WebsiteRenderer({
                   required
                 />
               </div>
-
-              {/* MESSAGE */}
 
               <div className="form-group form-group-full">
                 <label htmlFor="booking-message">Message</label>
@@ -450,7 +443,8 @@ function WebsiteRenderer({
 
       {/* ==================================================
           ABOUT
-      ================================================== */}
+          ================================================== */}
+
       <section id="about" className="about-section">
         <div className="public-container about-grid">
           <div className="about-visual">
@@ -463,14 +457,6 @@ function WebsiteRenderer({
             ) : (
               <div className="about-icon">🏢</div>
             )}
-
-            <div className="about-floating-card">
-              <strong>{businessName}</strong>
-              <span>
-                {safeServices.length} service
-                {safeServices.length === 1 ? "" : "s"} available
-              </span>
-            </div>
           </div>
 
           <div className="about-content">
@@ -482,25 +468,6 @@ function WebsiteRenderer({
               {about ||
                 `${businessName} is committed to providing dependable service and a positive experience for every customer.`}
             </p>
-
-            <div className="about-summary">
-              <div>
-                <strong>{safeServices.length}</strong>
-                <span>Services</span>
-              </div>
-
-              <div>
-                <strong>{safeGallery.length}</strong>
-                <span>Photos</span>
-              </div>
-
-              {hours && (
-                <div>
-                  <strong>Hours</strong>
-                  <span>{hours}</span>
-                </div>
-              )}
-            </div>
 
             <button
               type="button"
@@ -515,7 +482,7 @@ function WebsiteRenderer({
 
       {/* ==================================================
           CONTACT
-      ================================================== */}
+          ================================================== */}
 
       <section id="contact" className="contact-section">
         <div className="public-container">
@@ -530,10 +497,6 @@ function WebsiteRenderer({
           </div>
 
           <div className="contact-grid">
-            {/* ==================================================
-                DIRECTIONS
-            ================================================== */}
-
             {address && (
               <a
                 className="contact-card"
@@ -552,10 +515,6 @@ function WebsiteRenderer({
               </a>
             )}
 
-            {/* ==================================================
-                PHONE
-            ================================================== */}
-
             {displayPhone && (
               <a
                 className="contact-card"
@@ -571,10 +530,6 @@ function WebsiteRenderer({
                 </div>
               </a>
             )}
-
-            {/* ==================================================
-                OPENING HOURS
-            ================================================== */}
 
             {hours && (
               <div className="contact-card">
@@ -593,14 +548,14 @@ function WebsiteRenderer({
 
       {/* ==================================================
           FOOTER
-      ================================================== */}
+          ================================================== */}
 
       <footer className="public-footer">
         <div className="public-container footer-inner">
           <div>
             <strong>{businessName}</strong>
 
-            <p>Quality service. Customer focused.</p>
+            {heroSubTitle && <p>{heroSubTitle}</p>}
           </div>
 
           <p>
@@ -611,7 +566,7 @@ function WebsiteRenderer({
 
       {/* ==================================================
           MOBILE CONTACT BAR
-      ================================================== */}
+          ================================================== */}
 
       {(displayPhone || displayWhatsapp) && (
         <div className="mobile-contact-bar">
