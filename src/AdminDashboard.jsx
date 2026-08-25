@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 function AdminDashboard({ token }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,7 +24,7 @@ function AdminDashboard({ token }) {
       setLoading(true);
       setError("");
 
-      const response = await fetch("http://localhost:5000/api/admin/users", {
+      const response = await fetch(`${API_URL}/api/admin/users`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -37,7 +39,7 @@ function AdminDashboard({ token }) {
       setUsers(data.users || []);
     } catch (error) {
       console.error("Admin users error:", error);
-      setError(error.message);
+      setError(error.message || "Failed to load users");
     } finally {
       setLoading(false);
     }
@@ -46,6 +48,8 @@ function AdminDashboard({ token }) {
   useEffect(() => {
     if (token) {
       loadUsers();
+    } else {
+      setLoading(false);
     }
   }, [token]);
 
@@ -57,7 +61,7 @@ function AdminDashboard({ token }) {
     setCreateError("");
 
     try {
-      const response = await fetch("http://localhost:5000/api/admin/users", {
+      const response = await fetch(`${API_URL}/api/admin/users`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -90,7 +94,7 @@ function AdminDashboard({ token }) {
       }, 1000);
     } catch (error) {
       console.error("Create customer error:", error);
-      setCreateError(error.message);
+      setCreateError(error.message || "Failed to create customer");
     } finally {
       setCreating(false);
     }
@@ -109,15 +113,12 @@ function AdminDashboard({ token }) {
       setDeletingUserId(user.id);
       setError("");
 
-      const response = await fetch(
-        `http://localhost:5000/api/admin/users/${user.id}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+      const response = await fetch(`${API_URL}/api/admin/users/${user.id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
 
       const data = await response.json();
 
@@ -125,13 +126,12 @@ function AdminDashboard({ token }) {
         throw new Error(data.message || "Failed to delete customer");
       }
 
-      // Remove deleted customer immediately from the UI
       setUsers((currentUsers) =>
         currentUsers.filter((currentUser) => currentUser.id !== user.id),
       );
     } catch (error) {
       console.error("Delete customer error:", error);
-      setError(error.message);
+      setError(error.message || "Failed to delete customer");
     } finally {
       setDeletingUserId(null);
     }
@@ -147,7 +147,11 @@ function AdminDashboard({ token }) {
         </div>
 
         <div style={styles.headerActions}>
-          <button style={styles.refreshButton} onClick={loadUsers}>
+          <button
+            style={styles.refreshButton}
+            onClick={loadUsers}
+            type="button"
+          >
             Refresh
           </button>
 
@@ -158,6 +162,7 @@ function AdminDashboard({ token }) {
               setCreateMessage("");
               setCreateError("");
             }}
+            type="button"
           >
             {showCreateForm ? "Close" : "+ Create Customer"}
           </button>
@@ -238,15 +243,10 @@ function AdminDashboard({ token }) {
               <thead>
                 <tr>
                   <th style={styles.th}>Name</th>
-
                   <th style={styles.th}>Email</th>
-
                   <th style={styles.th}>Role</th>
-
                   <th style={styles.th}>Business</th>
-
                   <th style={styles.th}>Website</th>
-
                   <th style={styles.th}>Action</th>
                 </tr>
               </thead>
@@ -280,6 +280,7 @@ function AdminDashboard({ token }) {
                           style={styles.deleteButton}
                           onClick={() => handleDeleteCustomer(user)}
                           disabled={deletingUserId === user.id}
+                          type="button"
                         >
                           {deletingUserId === user.id
                             ? "Deleting..."
