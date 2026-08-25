@@ -323,6 +323,10 @@
   font-weight: 600;
 }
 
+/* =========================================================
+   BUSINESS INTRODUCTION
+   ========================================================= */
+
 .hero-description {
   max-width: 700px;
 
@@ -333,6 +337,12 @@
   font-size: 18px;
 
   line-height: 1.7;
+
+  /*
+   * Preserve customer-entered line breaks
+   * without preserving accidental multiple spaces.
+   */
+  white-space: pre-line;
 }
 
 .hero-actions {
@@ -665,6 +675,7 @@
 
 .gallery-lightbox-close:focus-visible {
   outline: 2px solid #ffffff;
+
   outline-offset: 3px;
 }
 
@@ -1397,6 +1408,8 @@ html {
     font-size: 15px;
 
     line-height: 1.6;
+
+    white-space: pre-line;
   }
 
   .hero-actions {
@@ -1511,11 +1524,13 @@ html {
 
   .mobile-call {
     background: #2563eb;
+
     color: #ffffff;
   }
 
   .mobile-wa {
     background: #20b86a;
+
     color: #ffffff;
   }
 
@@ -1597,6 +1612,10 @@ html {
 
   .hero-description {
     font-size: 14px;
+
+    line-height: 1.55;
+
+    white-space: pre-line;
   }
 
   .public-nav button {
