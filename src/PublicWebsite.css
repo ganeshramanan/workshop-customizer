@@ -338,10 +338,6 @@
 
   line-height: 1.7;
 
-  /*
-   * Preserve customer-entered line breaks
-   * without preserving accidental multiple spaces.
-   */
   white-space: pre-line;
 }
 
@@ -897,10 +893,6 @@
    THEMES
    ========================================================= */
 
-/* -------------------------
-   GREEN
-   ------------------------- */
-
 .public-site.green .hero-text h1 span,
 .public-site.green .section-heading span,
 .public-site.green .section-label {
@@ -914,10 +906,6 @@
 .public-site.green .hero-primary-button:hover {
   background: #117b3a;
 }
-
-/* -------------------------
-   ORANGE
-   ------------------------- */
 
 .public-site.orange .hero-text h1 span,
 .public-site.orange .section-heading span,
@@ -933,9 +921,9 @@
   background: #cf5f12;
 }
 
-/* -------------------------
-   DARK
-   ------------------------- */
+/* =========================================================
+   DARK THEME
+   ========================================================= */
 
 .public-site.dark {
   background: #111827;
@@ -1176,6 +1164,10 @@
   font-weight: 600;
 }
 
+/* =========================================================
+   FORM FIELDS
+   ========================================================= */
+
 .form-group input,
 .form-group select,
 .form-group textarea {
@@ -1189,9 +1181,21 @@
 
   background: #ffffff;
 
+  color: #172033;
+
   font-family: inherit;
 
   font-size: 15px;
+
+  -webkit-text-fill-color: #172033;
+}
+
+.form-group input::placeholder,
+.form-group select::placeholder,
+.form-group textarea::placeholder {
+  color: #8a94a6;
+
+  opacity: 1;
 }
 
 .form-group input:focus,
@@ -1204,6 +1208,10 @@
 
 .form-group textarea {
   resize: vertical;
+
+  color: #172033;
+
+  -webkit-text-fill-color: #172033;
 }
 
 .form-submit-container {
@@ -1436,12 +1444,18 @@ html {
   .section-heading h2,
   .about-content h2 {
     font-size: 32px;
+
+    color: #172033;
   }
 
   /* Services */
 
   .service-grid {
     grid-template-columns: 1fr;
+  }
+
+  .service-card h3 {
+    color: #172033;
   }
 
   /* Gallery */
@@ -1558,6 +1572,16 @@ html {
 
   .service-request-button {
     width: 100%;
+  }
+
+  /* Mobile form text */
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    color: #172033;
+
+    -webkit-text-fill-color: #172033;
   }
 
   /* Gallery lightbox */
