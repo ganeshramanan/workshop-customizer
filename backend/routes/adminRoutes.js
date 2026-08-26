@@ -9,25 +9,39 @@ const router = express.Router();
 /*
   GET ALL USERS
   GET /api/admin/users
+
+  Returns:
+  - User information
+  - Business information
+  - Website information
+  - Permanent website slug
 */
 router.get("/users", authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const result = await pool.query(`
-        SELECT
-          u.id,
-          u.name,
-          u.email,
-          u.role,
-          u.created_at,
-          b.name AS "businessName",
-          w.id AS "websiteId"
-        FROM users u
-        LEFT JOIN businesses b
-          ON b.user_id = u.id
-        LEFT JOIN websites w
-          ON w.business_id = b.id
-        ORDER BY u.id DESC
-      `);
+      SELECT
+        u.id,
+        u.name,
+        u.email,
+        u.role,
+        u.created_at,
+
+        b.name AS "businessName",
+
+        w.id AS "websiteId",
+        w.site_name AS "siteName",
+        w.site_slug AS "siteSlug"
+
+      FROM users u
+
+      LEFT JOIN businesses b
+        ON b.user_id = u.id
+
+      LEFT JOIN websites w
+        ON w.business_id = b.id
+
+      ORDER BY u.id DESC
+    `);
 
     res.json({
       users: result.rows,
@@ -46,78 +60,93 @@ router.get("/users", authMiddleware, adminMiddleware, async (req, res) => {
   DELETE CUSTOMER
   DELETE /api/admin/users/:id
 */
-router.delete("/users/:id", async (req, res) => {
-  const client = await pool.connect();
+router.delete(
+  "/users/:id",
+  authMiddleware,
+  adminMiddleware,
+  async (req, res) => {
+    const client = await pool.connect();
 
-  try {
-    const userId = Number(req.params.id);
+    try {
+      const userId = Number(req.params.id);
 
-    if (!Number.isInteger(userId)) {
-      return res.status(400).json({
-        message: "Invalid user ID",
+      if (!Number.isInteger(userId)) {
+        return res.status(400).json({
+          message: "Invalid user ID",
+        });
+      }
+
+      // ---------------------------------------------
+      // CHECK USER EXISTS
+      // ---------------------------------------------
+
+      const userResult = await client.query(
+        `
+        SELECT
+          id,
+          name,
+          email,
+          role
+        FROM users
+        WHERE id = $1
+        `,
+        [userId],
+      );
+
+      if (userResult.rows.length === 0) {
+        return res.status(404).json({
+          message: "User not found",
+        });
+      }
+
+      const user = userResult.rows[0];
+
+      // ---------------------------------------------
+      // NEVER ALLOW DELETING ADMIN
+      // ---------------------------------------------
+
+      if (user.role === "admin") {
+        return res.status(403).json({
+          message: "Admin users cannot be deleted",
+        });
+      }
+
+      await client.query("BEGIN");
+
+      // businesses, websites and services will be
+      // deleted automatically because of ON DELETE CASCADE
+      await client.query(
+        `
+        DELETE FROM users
+        WHERE id = $1
+        `,
+        [userId],
+      );
+
+      await client.query("COMMIT");
+
+      res.json({
+        message: "Customer deleted successfully",
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+        },
       });
-    }
+    } catch (error) {
+      await client.query("ROLLBACK");
 
-    // Check user exists
-    const userResult = await client.query(
-      `
-      SELECT id, name, email, role
-      FROM users
-      WHERE id = $1
-      `,
-      [userId],
-    );
+      console.error("Delete customer error:", error);
 
-    if (userResult.rows.length === 0) {
-      return res.status(404).json({
-        message: "User not found",
+      res.status(500).json({
+        message: "Failed to delete customer",
+        error: error.message,
       });
+    } finally {
+      client.release();
     }
-
-    const user = userResult.rows[0];
-
-    // Never allow deleting an admin
-    if (user.role === "admin") {
-      return res.status(403).json({
-        message: "Admin users cannot be deleted",
-      });
-    }
-
-    await client.query("BEGIN");
-
-    // businesses, websites and services will be
-    // deleted automatically because of ON DELETE CASCADE
-    await client.query(
-      `
-      DELETE FROM users
-      WHERE id = $1
-      `,
-      [userId],
-    );
-
-    await client.query("COMMIT");
-
-    res.json({
-      message: "Customer deleted successfully",
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-      },
-    });
-  } catch (error) {
-    await client.query("ROLLBACK");
-
-    console.error("Delete customer error:", error);
-
-    res.status(500).json({
-      message: "Failed to delete customer",
-      error: error.message,
-    });
-  } finally {
-    client.release();
-  }
-});
+  },
+);
 
 /*
   CREATE CUSTOMER
@@ -137,7 +166,10 @@ router.post("/users", authMiddleware, adminMiddleware, async (req, res) => {
 
     await client.query("BEGIN");
 
-    // Check if email already exists
+    // ---------------------------------------------
+    // CHECK IF EMAIL ALREADY EXISTS
+    // ---------------------------------------------
+
     const existingUser = await client.query(
       `
         SELECT id
@@ -155,7 +187,10 @@ router.post("/users", authMiddleware, adminMiddleware, async (req, res) => {
       });
     }
 
-    // Hash password
+    // ---------------------------------------------
+    // HASH PASSWORD
+    // ---------------------------------------------
+
     const passwordHash = await bcrypt.hash(password, 10);
 
     // ---------------------------------------------
@@ -187,7 +222,13 @@ router.post("/users", authMiddleware, adminMiddleware, async (req, res) => {
     const businessResult = await client.query(
       `
         INSERT INTO businesses
-          (user_id, name, phone, whatsapp, address)
+          (
+            user_id,
+            name,
+            phone,
+            whatsapp,
+            address
+          )
         VALUES
           ($1, '', '', '', '')
         RETURNING
