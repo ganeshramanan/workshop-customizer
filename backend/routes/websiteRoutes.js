@@ -163,47 +163,54 @@ router.get("/my-website", authMiddleware, async (req, res) => {
     }
 
     // ------------------------------------------------
-    // AUTO-GENERATE SITE NAME + SLUG FOR OLD RECORDS
+    // IMPORTANT:
+    // Generate site slug ONLY if it does not exist.
+    //
+    // Once a slug exists, NEVER regenerate it just
+    // because the business/site name changes.
     // ------------------------------------------------
 
-    if (!website.siteName || !website.siteSlug) {
+    if (!website.siteSlug) {
       const siteName = website.siteName || website.businessName || "My Website";
 
-      const siteSlug = createSlug(siteName);
+      let finalSlug = createSlug(siteName);
 
-      // Only update if slug is not already present.
-      if (!website.siteSlug) {
-        let finalSlug = siteSlug || `website-${website.id}`;
+      if (!finalSlug) {
+        finalSlug = `website-${website.id}`;
+      }
 
-        const existingSlug = await pool.query(
-          `
-            SELECT id
-            FROM websites
-            WHERE site_slug = $1
-              AND id <> $2
-            LIMIT 1
-          `,
-          [finalSlug, website.id],
-        );
+      // Check whether slug is already being used
+      const existingSlug = await pool.query(
+        `
+          SELECT id
+          FROM websites
+          WHERE site_slug = $1
+            AND id <> $2
+          LIMIT 1
+        `,
+        [finalSlug, website.id],
+      );
 
-        if (existingSlug.rows.length > 0) {
-          finalSlug = `${finalSlug}-${website.id}`;
-        }
+      if (existingSlug.rows.length > 0) {
+        finalSlug = `${finalSlug}-${website.id}`;
+      }
 
-        await pool.query(
-          `
-            UPDATE websites
-            SET
-              site_name = $1,
-              site_slug = $2,
-              updated_at = CURRENT_TIMESTAMP
-            WHERE id = $3
-          `,
-          [siteName, finalSlug, website.id],
-        );
+      await pool.query(
+        `
+          UPDATE websites
+          SET
+            site_name = COALESCE(site_name, $1),
+            site_slug = $2,
+            updated_at = CURRENT_TIMESTAMP
+          WHERE id = $3
+        `,
+        [siteName, finalSlug, website.id],
+      );
 
+      website.siteSlug = finalSlug;
+
+      if (!website.siteName) {
         website.siteName = siteName;
-        website.siteSlug = finalSlug;
       }
     }
 
@@ -333,15 +340,15 @@ router.delete("/logo", authMiddleware, async (req, res) => {
   try {
     const result = await pool.query(
       `
-          SELECT
-            w.id,
-            w.logo
-          FROM websites w
-          JOIN businesses b
-            ON w.business_id = b.id
-          WHERE b.user_id = $1
-          LIMIT 1
-        `,
+        SELECT
+          w.id,
+          w.logo
+        FROM websites w
+        JOIN businesses b
+          ON w.business_id = b.id
+        WHERE b.user_id = $1
+        LIMIT 1
+      `,
       [req.user.userId],
     );
 
@@ -381,12 +388,12 @@ router.delete("/logo", authMiddleware, async (req, res) => {
 
     await pool.query(
       `
-          UPDATE websites
-          SET
-            logo = NULL,
-            updated_at = CURRENT_TIMESTAMP
-          WHERE id = $1
-        `,
+        UPDATE websites
+        SET
+          logo = NULL,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = $1
+      `,
       [website.id],
     );
 
@@ -485,18 +492,18 @@ router.post(
 
         const galleryResult = await pool.query(
           `
-              INSERT INTO website_gallery (
-                website_id,
-                image_url,
-                file_name
-              )
-              VALUES ($1, $2, $3)
-              RETURNING
-                id,
-                image_url AS "imageUrl",
-                file_name AS "fileName",
-                created_at AS "createdAt"
-            `,
+            INSERT INTO website_gallery (
+              website_id,
+              image_url,
+              file_name
+            )
+            VALUES ($1, $2, $3)
+            RETURNING
+              id,
+              image_url AS "imageUrl",
+              file_name AS "fileName",
+              created_at AS "createdAt"
+          `,
           [websiteId, imageUrl, fileName],
         );
 
@@ -530,19 +537,19 @@ router.delete("/gallery/:id", authMiddleware, async (req, res) => {
 
     const result = await pool.query(
       `
-          SELECT
-            wg.id,
-            wg.website_id,
-            wg.image_url,
-            wg.file_name
-          FROM website_gallery wg
-          JOIN websites w
-            ON wg.website_id = w.id
-          JOIN businesses b
-            ON w.business_id = b.id
-          WHERE wg.id = $1
-            AND b.user_id = $2
-        `,
+        SELECT
+          wg.id,
+          wg.website_id,
+          wg.image_url,
+          wg.file_name
+        FROM website_gallery wg
+        JOIN websites w
+          ON wg.website_id = w.id
+        JOIN businesses b
+          ON w.business_id = b.id
+        WHERE wg.id = $1
+          AND b.user_id = $2
+      `,
       [galleryId, req.user.userId],
     );
 
@@ -566,9 +573,9 @@ router.delete("/gallery/:id", authMiddleware, async (req, res) => {
 
     await pool.query(
       `
-          DELETE FROM website_gallery
-          WHERE id = $1
-        `,
+        DELETE FROM website_gallery
+        WHERE id = $1
+      `,
       [galleryId],
     );
 
@@ -596,27 +603,27 @@ router.get("/public/:slug", async (req, res) => {
 
     const websiteResult = await pool.query(
       `
-            SELECT
-              w.id,
-              w.site_name AS "siteName",
-              w.site_slug AS "siteSlug",
-              b.name AS "businessName",
-              b.phone,
-              b.whatsapp,
-              b.address,
-              w.about,
-              w.logo,
-              w.theme,
-              w.hours,
-              w.hero_title AS "heroTitle",
-              w.hero_subtitle AS "heroSubtitle",
-              w.hero_badge AS "heroBadge"
-            FROM websites w
-            JOIN businesses b
-              ON w.business_id = b.id
-            WHERE w.site_slug = $1
-            LIMIT 1
-          `,
+        SELECT
+          w.id,
+          w.site_name AS "siteName",
+          w.site_slug AS "siteSlug",
+          b.name AS "businessName",
+          b.phone,
+          b.whatsapp,
+          b.address,
+          w.about,
+          w.logo,
+          w.theme,
+          w.hours,
+          w.hero_title AS "heroTitle",
+          w.hero_subtitle AS "heroSubtitle",
+          w.hero_badge AS "heroBadge"
+        FROM websites w
+        JOIN businesses b
+          ON w.business_id = b.id
+        WHERE w.site_slug = $1
+        LIMIT 1
+      `,
       [slug],
     );
 
@@ -634,11 +641,11 @@ router.get("/public/:slug", async (req, res) => {
 
     const servicesResult = await pool.query(
       `
-            SELECT name
-            FROM services
-            WHERE website_id = $1
-            ORDER BY id
-          `,
+        SELECT name
+        FROM services
+        WHERE website_id = $1
+        ORDER BY id
+      `,
       [website.id],
     );
 
@@ -650,15 +657,15 @@ router.get("/public/:slug", async (req, res) => {
 
     const galleryResult = await pool.query(
       `
-            SELECT
-              id,
-              image_url AS "imageUrl",
-              file_name AS "fileName",
-              created_at AS "createdAt"
-            FROM website_gallery
-            WHERE website_id = $1
-            ORDER BY id
-          `,
+        SELECT
+          id,
+          image_url AS "imageUrl",
+          file_name AS "fileName",
+          created_at AS "createdAt"
+        FROM website_gallery
+        WHERE website_id = $1
+        ORDER BY id
+      `,
       [website.id],
     );
 
@@ -688,27 +695,27 @@ router.get("/public-id/:id", async (req, res) => {
 
     const websiteResult = await pool.query(
       `
-            SELECT
-              w.id,
-              w.site_name AS "siteName",
-              w.site_slug AS "siteSlug",
-              b.name AS "businessName",
-              b.phone,
-              b.whatsapp,
-              b.address,
-              w.about,
-              w.logo,
-              w.theme,
-              w.hours,
-              w.hero_title AS "heroTitle",
-              w.hero_subtitle AS "heroSubtitle",
-              w.hero_badge AS "heroBadge"
-            FROM websites w
-            JOIN businesses b
-              ON w.business_id = b.id
-            WHERE w.id = $1
-            LIMIT 1
-          `,
+        SELECT
+          w.id,
+          w.site_name AS "siteName",
+          w.site_slug AS "siteSlug",
+          b.name AS "businessName",
+          b.phone,
+          b.whatsapp,
+          b.address,
+          w.about,
+          w.logo,
+          w.theme,
+          w.hours,
+          w.hero_title AS "heroTitle",
+          w.hero_subtitle AS "heroSubtitle",
+          w.hero_badge AS "heroBadge"
+        FROM websites w
+        JOIN businesses b
+          ON w.business_id = b.id
+        WHERE w.id = $1
+        LIMIT 1
+      `,
       [id],
     );
 
@@ -722,11 +729,11 @@ router.get("/public-id/:id", async (req, res) => {
 
     const servicesResult = await pool.query(
       `
-            SELECT name
-            FROM services
-            WHERE website_id = $1
-            ORDER BY id
-          `,
+        SELECT name
+        FROM services
+        WHERE website_id = $1
+        ORDER BY id
+      `,
       [id],
     );
 
@@ -734,15 +741,15 @@ router.get("/public-id/:id", async (req, res) => {
 
     const galleryResult = await pool.query(
       `
-            SELECT
-              id,
-              image_url AS "imageUrl",
-              file_name AS "fileName",
-              created_at AS "createdAt"
-            FROM website_gallery
-            WHERE website_id = $1
-            ORDER BY id
-          `,
+        SELECT
+          id,
+          image_url AS "imageUrl",
+          file_name AS "fileName",
+          created_at AS "createdAt"
+        FROM website_gallery
+        WHERE website_id = $1
+        ORDER BY id
+      `,
       [id],
     );
 
@@ -770,27 +777,27 @@ router.get("/:id", authMiddleware, async (req, res) => {
 
     const websiteResult = await pool.query(
       `
-            SELECT
-              w.id,
-              w.site_name AS "siteName",
-              w.site_slug AS "siteSlug",
-              b.name AS "businessName",
-              b.phone,
-              b.whatsapp,
-              b.address,
-              w.about,
-              w.logo,
-              w.theme,
-              w.hours,
-              w.hero_title AS "heroTitle",
-              w.hero_subtitle AS "heroSubtitle",
-              w.hero_badge AS "heroBadge"
-            FROM websites w
-            JOIN businesses b
-              ON w.business_id = b.id
-            WHERE w.id = $1
-              AND b.user_id = $2
-          `,
+        SELECT
+          w.id,
+          w.site_name AS "siteName",
+          w.site_slug AS "siteSlug",
+          b.name AS "businessName",
+          b.phone,
+          b.whatsapp,
+          b.address,
+          w.about,
+          w.logo,
+          w.theme,
+          w.hours,
+          w.hero_title AS "heroTitle",
+          w.hero_subtitle AS "heroSubtitle",
+          w.hero_badge AS "heroBadge"
+        FROM websites w
+        JOIN businesses b
+          ON w.business_id = b.id
+        WHERE w.id = $1
+          AND b.user_id = $2
+      `,
       [id, req.user.userId],
     );
 
@@ -804,11 +811,11 @@ router.get("/:id", authMiddleware, async (req, res) => {
 
     const servicesResult = await pool.query(
       `
-            SELECT name
-            FROM services
-            WHERE website_id = $1
-            ORDER BY id
-          `,
+        SELECT name
+        FROM services
+        WHERE website_id = $1
+        ORDER BY id
+      `,
       [id],
     );
 
@@ -816,15 +823,15 @@ router.get("/:id", authMiddleware, async (req, res) => {
 
     const galleryResult = await pool.query(
       `
-            SELECT
-              id,
-              image_url AS "imageUrl",
-              file_name AS "fileName",
-              created_at AS "createdAt"
-            FROM website_gallery
-            WHERE website_id = $1
-            ORDER BY id
-          `,
+        SELECT
+          id,
+          image_url AS "imageUrl",
+          file_name AS "fileName",
+          created_at AS "createdAt"
+        FROM website_gallery
+        WHERE website_id = $1
+        ORDER BY id
+      `,
       [id],
     );
 
@@ -853,7 +860,6 @@ router.put("/my-website", authMiddleware, async (req, res) => {
     const {
       businessName,
       siteName,
-      siteSlug,
       phone,
       about,
       theme,
@@ -874,11 +880,11 @@ router.put("/my-website", authMiddleware, async (req, res) => {
 
     const businessResult = await client.query(
       `
-            SELECT id
-            FROM businesses
-            WHERE user_id = $1
-            LIMIT 1
-          `,
+        SELECT id
+        FROM businesses
+        WHERE user_id = $1
+        LIMIT 1
+      `,
       [req.user.userId],
     );
 
@@ -898,11 +904,14 @@ router.put("/my-website", authMiddleware, async (req, res) => {
 
     const websiteResult = await client.query(
       `
-            SELECT id
-            FROM websites
-            WHERE business_id = $1
-            LIMIT 1
-          `,
+        SELECT
+          id,
+          site_name,
+          site_slug
+        FROM websites
+        WHERE business_id = $1
+        LIMIT 1
+      `,
       [businessId],
     );
 
@@ -916,41 +925,54 @@ router.put("/my-website", authMiddleware, async (req, res) => {
 
     const websiteId = websiteResult.rows[0].id;
 
+    const existingSiteName = websiteResult.rows[0].site_name;
+    const existingSiteSlug = websiteResult.rows[0].site_slug;
+
     // ------------------------------------------------
     // SITE NAME
+    //
+    // Site name can change.
     // ------------------------------------------------
 
     const finalSiteName = String(
-      siteName || businessName || "My Website",
+      siteName || businessName || existingSiteName || "My Website",
     ).trim();
 
     // ------------------------------------------------
     // SITE SLUG
+    //
+    // IMPORTANT:
+    //
+    // If a slug already exists, KEEP IT.
+    //
+    // Do NOT regenerate it from businessName/siteName.
     // ------------------------------------------------
 
-    let finalSlug = createSlug(siteSlug || finalSiteName);
+    let finalSlug = existingSiteSlug;
 
+    // Only generate a slug for old records where
+    // site_slug is NULL/empty.
     if (!finalSlug) {
-      finalSlug = `website-${websiteId}`;
-    }
+      finalSlug = createSlug(finalSiteName);
 
-    // ------------------------------------------------
-    // CHECK SLUG AVAILABILITY
-    // ------------------------------------------------
+      if (!finalSlug) {
+        finalSlug = `website-${websiteId}`;
+      }
 
-    const existingSlug = await client.query(
-      `
-            SELECT id
-            FROM websites
-            WHERE site_slug = $1
-              AND id <> $2
-            LIMIT 1
-          `,
-      [finalSlug, websiteId],
-    );
+      const existingSlug = await client.query(
+        `
+          SELECT id
+          FROM websites
+          WHERE site_slug = $1
+            AND id <> $2
+          LIMIT 1
+        `,
+        [finalSlug, websiteId],
+      );
 
-    if (existingSlug.rows.length > 0) {
-      finalSlug = `${finalSlug}-${websiteId}`;
+      if (existingSlug.rows.length > 0) {
+        finalSlug = `${finalSlug}-${websiteId}`;
+      }
     }
 
     // ------------------------------------------------
@@ -959,14 +981,14 @@ router.put("/my-website", authMiddleware, async (req, res) => {
 
     await client.query(
       `
-          UPDATE businesses
-          SET
-            name = $1,
-            phone = $2,
-            whatsapp = $3,
-            address = $4
-          WHERE id = $5
-        `,
+        UPDATE businesses
+        SET
+          name = $1,
+          phone = $2,
+          whatsapp = $3,
+          address = $4
+        WHERE id = $5
+      `,
       [businessName || finalSiteName, phone, whatsapp, address, businessId],
     );
 
@@ -976,20 +998,19 @@ router.put("/my-website", authMiddleware, async (req, res) => {
 
     await client.query(
       `
-          UPDATE websites
-          SET
-            site_name = $1,
-            site_slug = $2,
-            about = $3,
-            theme = $4,
-            hours = $5,
-            hero_title = $6,
-            hero_subtitle = $7,
-            hero_badge = $8,
-            updated_at =
-              CURRENT_TIMESTAMP
-          WHERE id = $9
-        `,
+        UPDATE websites
+        SET
+          site_name = $1,
+          site_slug = $2,
+          about = $3,
+          theme = $4,
+          hours = $5,
+          hero_title = $6,
+          hero_subtitle = $7,
+          hero_badge = $8,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = $9
+      `,
       [
         finalSiteName,
         finalSlug,
@@ -1009,9 +1030,9 @@ router.put("/my-website", authMiddleware, async (req, res) => {
 
     await client.query(
       `
-          DELETE FROM services
-          WHERE website_id = $1
-        `,
+        DELETE FROM services
+        WHERE website_id = $1
+      `,
       [websiteId],
     );
 
@@ -1020,12 +1041,12 @@ router.put("/my-website", authMiddleware, async (req, res) => {
         if (typeof service === "string" && service.trim()) {
           await client.query(
             `
-                INSERT INTO services (
-                  website_id,
-                  name
-                )
-                VALUES ($1, $2)
-              `,
+              INSERT INTO services (
+                website_id,
+                name
+              )
+              VALUES ($1, $2)
+            `,
             [websiteId, service.trim()],
           );
         }
@@ -1036,11 +1057,8 @@ router.put("/my-website", authMiddleware, async (req, res) => {
 
     return res.json({
       message: "Website saved successfully",
-
       websiteId,
-
       siteName: finalSiteName,
-
       siteSlug: finalSlug,
     });
   } catch (error) {
@@ -1078,7 +1096,6 @@ router.put("/:id", authMiddleware, async (req, res) => {
     const {
       businessName,
       siteName,
-      siteSlug,
       phone,
       whatsapp,
       address,
@@ -1099,17 +1116,17 @@ router.put("/:id", authMiddleware, async (req, res) => {
 
     const websiteResult = await client.query(
       `
-            SELECT
-              w.id,
-              w.business_id,
-              w.site_name,
-              w.site_slug
-            FROM websites w
-            JOIN businesses b
-              ON w.business_id = b.id
-            WHERE w.id = $1
-              AND b.user_id = $2
-          `,
+        SELECT
+          w.id,
+          w.business_id,
+          w.site_name,
+          w.site_slug
+        FROM websites w
+        JOIN businesses b
+          ON w.business_id = b.id
+        WHERE w.id = $1
+          AND b.user_id = $2
+      `,
       [id, req.user.userId],
     );
 
@@ -1125,44 +1142,55 @@ router.put("/:id", authMiddleware, async (req, res) => {
 
     const websiteId = websiteResult.rows[0].id;
 
+    const existingSiteName = websiteResult.rows[0].site_name;
+
+    const existingSiteSlug = websiteResult.rows[0].site_slug;
+
     // ------------------------------------------------
     // SITE NAME
+    //
+    // Site name can change.
     // ------------------------------------------------
 
     const finalSiteName = String(
-      siteName ||
-        businessName ||
-        websiteResult.rows[0].site_name ||
-        "My Website",
+      siteName || businessName || existingSiteName || "My Website",
     ).trim();
 
     // ------------------------------------------------
     // SITE SLUG
+    //
+    // IMPORTANT:
+    //
+    // Existing slug is PERMANENT.
+    //
+    // Never regenerate it from the new business name.
     // ------------------------------------------------
 
-    let finalSlug = createSlug(siteSlug || finalSiteName);
+    let finalSlug = existingSiteSlug;
 
+    // Only create slug if this is an old website
+    // that does not have one yet.
     if (!finalSlug) {
-      finalSlug = `website-${websiteId}`;
-    }
+      finalSlug = createSlug(finalSiteName);
 
-    // ------------------------------------------------
-    // CHECK SLUG AVAILABILITY
-    // ------------------------------------------------
+      if (!finalSlug) {
+        finalSlug = `website-${websiteId}`;
+      }
 
-    const existingSlug = await client.query(
-      `
-            SELECT id
-            FROM websites
-            WHERE site_slug = $1
-              AND id <> $2
-            LIMIT 1
-          `,
-      [finalSlug, websiteId],
-    );
+      const existingSlug = await client.query(
+        `
+          SELECT id
+          FROM websites
+          WHERE site_slug = $1
+            AND id <> $2
+          LIMIT 1
+        `,
+        [finalSlug, websiteId],
+      );
 
-    if (existingSlug.rows.length > 0) {
-      finalSlug = `${finalSlug}-${websiteId}`;
+      if (existingSlug.rows.length > 0) {
+        finalSlug = `${finalSlug}-${websiteId}`;
+      }
     }
 
     // ------------------------------------------------
@@ -1171,14 +1199,14 @@ router.put("/:id", authMiddleware, async (req, res) => {
 
     await client.query(
       `
-          UPDATE businesses
-          SET
-            name = $1,
-            phone = $2,
-            whatsapp = $3,
-            address = $4
-          WHERE id = $5
-        `,
+        UPDATE businesses
+        SET
+          name = $1,
+          phone = $2,
+          whatsapp = $3,
+          address = $4
+        WHERE id = $5
+      `,
       [businessName || finalSiteName, phone, whatsapp, address, businessId],
     );
 
@@ -1188,20 +1216,19 @@ router.put("/:id", authMiddleware, async (req, res) => {
 
     await client.query(
       `
-          UPDATE websites
-          SET
-            site_name = $1,
-            site_slug = $2,
-            about = $3,
-            theme = $4,
-            hours = $5,
-            hero_title = $6,
-            hero_subtitle = $7,
-            hero_badge = $8,
-            updated_at =
-              CURRENT_TIMESTAMP
-          WHERE id = $9
-        `,
+        UPDATE websites
+        SET
+          site_name = $1,
+          site_slug = $2,
+          about = $3,
+          theme = $4,
+          hours = $5,
+          hero_title = $6,
+          hero_subtitle = $7,
+          hero_badge = $8,
+          updated_at = CURRENT_TIMESTAMP
+        WHERE id = $9
+      `,
       [
         finalSiteName,
         finalSlug,
@@ -1221,9 +1248,9 @@ router.put("/:id", authMiddleware, async (req, res) => {
 
     await client.query(
       `
-          DELETE FROM services
-          WHERE website_id = $1
-        `,
+        DELETE FROM services
+        WHERE website_id = $1
+      `,
       [websiteId],
     );
 
@@ -1232,12 +1259,12 @@ router.put("/:id", authMiddleware, async (req, res) => {
         if (typeof service === "string" && service.trim()) {
           await client.query(
             `
-                INSERT INTO services (
-                  website_id,
-                  name
-                )
-                VALUES ($1, $2)
-              `,
+              INSERT INTO services (
+                website_id,
+                name
+              )
+              VALUES ($1, $2)
+            `,
             [websiteId, service.trim()],
           );
         }
@@ -1248,11 +1275,8 @@ router.put("/:id", authMiddleware, async (req, res) => {
 
     return res.json({
       message: "Website updated successfully",
-
       websiteId: Number(websiteId),
-
       siteName: finalSiteName,
-
       siteSlug: finalSlug,
     });
   } catch (error) {
