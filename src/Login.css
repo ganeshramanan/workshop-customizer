@@ -425,3 +425,17 @@
     display: none;
   }
 }
+
+.brand-logo {
+  display: block;
+  width: 220px;
+  max-width: 80%;
+  height: auto;
+  margin: 0 auto 10px;
+}
+
+@media (max-width: 480px) {
+  .brand-logo {
+    width: 190px;
+  }
+}

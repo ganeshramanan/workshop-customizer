@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "./Login.css";
+import grambiLogo from "./assets/grambi-logo.png";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
@@ -71,11 +72,7 @@ function Login({ onLogin }) {
       <div className="login-card">
         {/* BRAND */}
         <div className="login-brand">
-          <div className="brand-icon">✦</div>
-
-          <div className="brand-name">SiteCraft</div>
-
-          <div className="brand-tagline">Build your business online.</div>
+          <img src={grambiLogo} alt="Grambi" className="brand-logo" />
         </div>
 
         {/* LOGIN INTRO */}
@@ -144,8 +141,10 @@ function Login({ onLogin }) {
 
         {/* FOOTER */}
         <div className="login-footer">
-          <span>SiteCraft</span>
+          <span>Grambi</span>
+
           <span className="footer-dot">•</span>
+
           <span>Your business, your website.</span>
         </div>
       </div>

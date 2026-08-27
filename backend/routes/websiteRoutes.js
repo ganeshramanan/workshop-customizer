@@ -47,6 +47,15 @@ const createSlug = (value) => {
 
 // ====================================================
 // HELPER
+// CHECK WHETHER SLUG IS A TEMPORARY WEBSITE-ID SLUG
+// ====================================================
+
+const isTemporarySlug = (slug, websiteId) => {
+  return String(slug || "") === `website-${websiteId}`;
+};
+
+// ====================================================
+// HELPER
 // GET USER'S WEBSITE ID
 // ====================================================
 
@@ -163,15 +172,23 @@ router.get("/my-website", authMiddleware, async (req, res) => {
     }
 
     // ------------------------------------------------
-    // IMPORTANT:
-    // Generate site slug ONLY if it does not exist.
+    // SLUG LOGIC
     //
-    // Once a slug exists, NEVER regenerate it just
-    // because the business/site name changes.
+    // A website-ID slug such as website-123 is only
+    // a temporary placeholder.
+    //
+    // If the customer later provides a real business
+    // or site name, replace the temporary slug with
+    // the real slug.
+    //
+    // Once a real slug exists, NEVER regenerate it.
     // ------------------------------------------------
 
-    if (!website.siteSlug) {
-      const siteName = website.siteName || website.businessName || "My Website";
+    if (!website.siteSlug || isTemporarySlug(website.siteSlug, website.id)) {
+      const siteName =
+        website.siteName?.trim() ||
+        website.businessName?.trim() ||
+        "My Website";
 
       let finalSlug = createSlug(siteName);
 
@@ -179,38 +196,47 @@ router.get("/my-website", authMiddleware, async (req, res) => {
         finalSlug = `website-${website.id}`;
       }
 
-      // Check whether slug is already being used
-      const existingSlug = await pool.query(
-        `
-          SELECT id
-          FROM websites
-          WHERE site_slug = $1
-            AND id <> $2
-          LIMIT 1
-        `,
-        [finalSlug, website.id],
-      );
+      const hasRealName =
+        Boolean(website.siteName?.trim()) ||
+        Boolean(website.businessName?.trim());
 
-      if (existingSlug.rows.length > 0) {
-        finalSlug = `${finalSlug}-${website.id}`;
-      }
+      if (hasRealName) {
+        // ------------------------------------------------
+        // CHECK SLUG UNIQUENESS
+        // ------------------------------------------------
 
-      await pool.query(
-        `
-          UPDATE websites
-          SET
-            site_name = COALESCE(site_name, $1),
-            site_slug = $2,
-            updated_at = CURRENT_TIMESTAMP
-          WHERE id = $3
-        `,
-        [siteName, finalSlug, website.id],
-      );
+        const existingSlug = await pool.query(
+          `
+            SELECT id
+            FROM websites
+            WHERE site_slug = $1
+              AND id <> $2
+            LIMIT 1
+          `,
+          [finalSlug, website.id],
+        );
 
-      website.siteSlug = finalSlug;
+        if (existingSlug.rows.length > 0) {
+          finalSlug = `${finalSlug}-${website.id}`;
+        }
 
-      if (!website.siteName) {
-        website.siteName = siteName;
+        await pool.query(
+          `
+            UPDATE websites
+            SET
+              site_name = COALESCE(NULLIF(site_name, ''), $1),
+              site_slug = $2,
+              updated_at = CURRENT_TIMESTAMP
+            WHERE id = $3
+          `,
+          [siteName, finalSlug, website.id],
+        );
+
+        website.siteSlug = finalSlug;
+
+        if (!website.siteName) {
+          website.siteName = siteName;
+        }
       }
     }
 
@@ -935,43 +961,49 @@ router.put("/my-website", authMiddleware, async (req, res) => {
     // ------------------------------------------------
 
     const finalSiteName = String(
-      siteName || businessName || existingSiteName || "My Website",
+      siteName?.trim() ||
+        businessName?.trim() ||
+        existingSiteName?.trim() ||
+        "My Website",
     ).trim();
 
     // ------------------------------------------------
     // SITE SLUG
     //
-    // IMPORTANT:
+    // Existing REAL slug is permanent.
     //
-    // If a slug already exists, KEEP IT.
-    //
-    // Do NOT regenerate it from businessName/siteName.
+    // A temporary website-ID slug can be replaced
+    // once the customer provides a real name.
     // ------------------------------------------------
+
+    const temporarySlug = `website-${websiteId}`;
 
     let finalSlug = existingSiteSlug;
 
-    // Only generate a slug for old records where
-    // site_slug is NULL/empty.
-    if (!finalSlug) {
+    if (!finalSlug || isTemporarySlug(finalSlug, websiteId)) {
       finalSlug = createSlug(finalSiteName);
 
       if (!finalSlug) {
-        finalSlug = `website-${websiteId}`;
+        finalSlug = temporarySlug;
       }
 
-      const existingSlug = await client.query(
-        `
-          SELECT id
-          FROM websites
-          WHERE site_slug = $1
-            AND id <> $2
-          LIMIT 1
-        `,
-        [finalSlug, websiteId],
-      );
+      // Only check uniqueness when creating a
+      // real slug.
+      if (finalSlug !== temporarySlug) {
+        const existingSlug = await client.query(
+          `
+            SELECT id
+            FROM websites
+            WHERE site_slug = $1
+              AND id <> $2
+            LIMIT 1
+          `,
+          [finalSlug, websiteId],
+        );
 
-      if (existingSlug.rows.length > 0) {
-        finalSlug = `${finalSlug}-${websiteId}`;
+        if (existingSlug.rows.length > 0) {
+          finalSlug = `${finalSlug}-${websiteId}`;
+        }
       }
     }
 
@@ -1139,11 +1171,9 @@ router.put("/:id", authMiddleware, async (req, res) => {
     }
 
     const businessId = websiteResult.rows[0].business_id;
-
     const websiteId = websiteResult.rows[0].id;
 
     const existingSiteName = websiteResult.rows[0].site_name;
-
     const existingSiteSlug = websiteResult.rows[0].site_slug;
 
     // ------------------------------------------------
@@ -1153,43 +1183,49 @@ router.put("/:id", authMiddleware, async (req, res) => {
     // ------------------------------------------------
 
     const finalSiteName = String(
-      siteName || businessName || existingSiteName || "My Website",
+      siteName?.trim() ||
+        businessName?.trim() ||
+        existingSiteName?.trim() ||
+        "My Website",
     ).trim();
 
     // ------------------------------------------------
     // SITE SLUG
     //
-    // IMPORTANT:
+    // Existing REAL slug is permanent.
     //
-    // Existing slug is PERMANENT.
-    //
-    // Never regenerate it from the new business name.
+    // A temporary website-ID slug can be replaced
+    // once the customer provides a real name.
     // ------------------------------------------------
+
+    const temporarySlug = `website-${websiteId}`;
 
     let finalSlug = existingSiteSlug;
 
-    // Only create slug if this is an old website
-    // that does not have one yet.
-    if (!finalSlug) {
+    if (!finalSlug || isTemporarySlug(finalSlug, websiteId)) {
       finalSlug = createSlug(finalSiteName);
 
       if (!finalSlug) {
-        finalSlug = `website-${websiteId}`;
+        finalSlug = temporarySlug;
       }
 
-      const existingSlug = await client.query(
-        `
-          SELECT id
-          FROM websites
-          WHERE site_slug = $1
-            AND id <> $2
-          LIMIT 1
-        `,
-        [finalSlug, websiteId],
-      );
+      // Only check uniqueness when creating a
+      // real slug.
+      if (finalSlug !== temporarySlug) {
+        const existingSlug = await client.query(
+          `
+            SELECT id
+            FROM websites
+            WHERE site_slug = $1
+              AND id <> $2
+            LIMIT 1
+          `,
+          [finalSlug, websiteId],
+        );
 
-      if (existingSlug.rows.length > 0) {
-        finalSlug = `${finalSlug}-${websiteId}`;
+        if (existingSlug.rows.length > 0) {
+          finalSlug = `${finalSlug}-${websiteId}`;
+        }
       }
     }
 
